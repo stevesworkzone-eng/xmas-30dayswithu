@@ -1524,12 +1524,39 @@
     </div>
   </div>
 
-  <script>
+  <script type type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+} from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+    apiKey: "AIzaSyDDmoePihLpjM5pmkZuIQAAajw8mtM9UU4",
+    authDomain: "xmas-rose.firebaseapp.com",
+    projectId: "xmas-rose",
+    storageBucket: "xmas-rose.firebasestorage.app",
+    messagingSenderId: "1087656471298",
+    appId: "1:1087656471298:web:9cc720ec67de2ba01bb01b",
+    measurementId: "G-J6X39P4NBZ"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+
+// We’ll store everything under one document for Rose
+const userDocRef = doc(db, "xmasUsers", "rose");
+
+    
     // === BASIC CONFIG ===
     const LOGIN_PASSWORD = "mychristmascode"; // <<< change for Rose
     const ADMIN_PASSWORD = "adminrose";       // <<< change for you
       // NEW: backend endpoint to sync data
-const SYNC_ENDPOINT = "https://your-backend-url.com/api/rose-xmas";
+//const SYNC_ENDPOINT = "https://your-backend-url.com/api/rose-xmas";
 
     const LOGIN_KEY = "xmas_login_ok_v1";
     const LOVE_POINTS_KEY = "love_points_v1";
@@ -2280,6 +2307,40 @@ const SYNC_ENDPOINT = "https://your-backend-url.com/api/rose-xmas";
     function updateLovePointsDisplay() {
       lovePointsSpan.textContent = lovePoints;
     }
+async function loadFromCloud() {
+  try {
+    const snap = await getDoc(userDocRef);
+    if (snap.exists()) {
+      const data = snap.data();
+
+      // Only overwrite if present in DB
+      if (typeof data.lovePoints === "number") {
+        lovePoints = data.lovePoints;
+      }
+      if (Array.isArray(data.completedDays)) {
+        completedDays = data.completedDays;
+      }
+      if (data.openedPerDate && typeof data.openedPerDate === "object") {
+        openedPerDate = data.openedPerDate;
+      }
+      if (data.activityLogs && typeof data.activityLogs === "object") {
+        activityLogs = data.activityLogs;
+      }
+      if (typeof data.gfName === "string") {
+        localStorage.setItem("gfName", data.gfName);
+        setNameEverywhere(data.gfName);
+        nameInput.value = data.gfName;
+      }
+
+      // Refresh UI with cloud data
+      updateLovePointsDisplay();
+      updateProgress();
+      completedDays.forEach(updateDayCardCompleted);
+    }
+  } catch (err) {
+    console.error("Error loading from Firestore:", err);
+  }
+}
 
     function updateProgress() {
       const done = completedDays.length;
@@ -2289,15 +2350,33 @@ const SYNC_ENDPOINT = "https://your-backend-url.com/api/rose-xmas";
       progressFill.style.width = `${percent}%`;
     }
 
-    function saveLoveState() {
+async function saveLoveState() {
+  // still keep localStorage as a backup
   localStorage.setItem(LOVE_POINTS_KEY, String(lovePoints));
   localStorage.setItem(COMPLETED_DAYS_KEY, JSON.stringify(completedDays));
   localStorage.setItem(OPENED_PER_DATE_KEY, JSON.stringify(openedPerDate));
   localStorage.setItem(ACTIVITY_LOGS_KEY, JSON.stringify(activityLogs));
 
-  // NEW: also push to server
-  syncData();
+  const gfNameToSave = localStorage.getItem("gfName") || "Rose";
+
+  try {
+    await setDoc(
+      userDocRef,
+      {
+        lovePoints,
+        completedDays,
+        openedPerDate,
+        activityLogs,
+        gfName: gfNameToSave,
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true } // so we don’t wipe fields
+    );
+  } catch (err) {
+    console.error("Error saving to Firestore:", err);
+  }
 }
+
 
     updateLovePointsDisplay();
     updateProgress();
@@ -2726,8 +2805,11 @@ function syncData() {
         body.appendChild(note);
       }
     }
+    loadFromCloud();
+
   </script>
 </body>
 </html>
+
 
 
