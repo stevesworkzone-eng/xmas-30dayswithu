@@ -1330,6 +1330,12 @@
         </div>
 
         <div class="admin-content" id="admin-content" style="display:none;">
+          <div class="admin-actions">
+    <button class="admin-reset" id="admin-reset-button" type="button">
+      🧨 Reset all data (dev only)
+    </button>
+  </div>
+
           <div class="admin-summary" id="admin-summary"></div>
           <div class="admin-table-wrapper">
             <table class="admin-table" id="admin-table">
@@ -1525,6 +1531,15 @@
   </div>
 
   <script type="module">
+// --- FIREBASE  delete reset SETUP ---
+    import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  deleteDoc,   // ✅ add this
+} from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
     // --- FIREBASE SETUP ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
     import {
@@ -2778,3 +2793,4 @@
   </script>
 </body>
 </html>
+
