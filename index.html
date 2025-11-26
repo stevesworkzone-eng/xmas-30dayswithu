@@ -1309,7 +1309,7 @@
           </button>
         </div>
         <div class="login-subtitle">
-          View Rose’s progress, answers, and love points. Stored only on this device.
+          View Rose’s progress, answers, and love points. Synced via cloud (Firestore) for this login.
         </div>
 
         <div id="admin-login-section">
@@ -1524,439 +1524,1257 @@
     </div>
   </div>
 
- <script type="module">
-  // --- FIREBASE SETUP ---
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-  import {
-    getFirestore,
-    doc,
-    getDoc,
-    setDoc,
-  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+  <script type="module">
+    // --- FIREBASE SETUP ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+    } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDDmoePihLpjM5pmkZuIQAAajw8mtM9UU4",
-    authDomain: "xmas-rose.firebaseapp.com",
-    projectId: "xmas-rose",
-    storageBucket: "xmas-rose.firebasestorage.app",
-    messagingSenderId: "1087656471298",
-    appId: "1:1087656471298:web:9cc720ec67de2ba01bb01b",
-    measurementId: "G-J6X39P4NBZ"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyDDmoePihLpjM5pmkZuIQAAajw8mtM9UU4",
+      authDomain: "xmas-rose.firebaseapp.com",
+      projectId: "xmas-rose",
+      storageBucket: "xmas-rose.firebasestorage.app",
+      messagingSenderId: "1087656471298",
+      appId: "1:1087656471298:web:9cc720ec67de2ba01bb01b",
+      measurementId: "G-J6X39P4NBZ"
+    };
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-  // We’ll store everything under one document for Rose
-  const userDocRef = doc(db, "xmasUsers", "rose");
+    // single document for Rose
+    const userDocRef = doc(db, "xmasUsers", "rose");
 
-  // === BASIC CONFIG ===
-  const LOGIN_PASSWORD = "mychristmascode"; // <<< change for Rose
-  const ADMIN_PASSWORD = "adminrose";       // <<< change for you
+    // === BASIC CONFIG ===
+    const LOGIN_PASSWORD = "mychristmascode"; // <<< change for Rose
+    const ADMIN_PASSWORD = "adminrose";       // <<< change for you
 
-  const LOGIN_KEY = "xmas_login_ok_v1";
-  const LOVE_POINTS_KEY = "love_points_v1";
-  const COMPLETED_DAYS_KEY = "completed_days_v1";
-  const OPENED_PER_DATE_KEY = "opened_per_date_v1";
-  const ACTIVITY_LOGS_KEY = "activity_logs_v1";
-  const POINTS_PER_TASK = 10;
+    const LOGIN_KEY = "xmas_login_ok_v1";
+    const LOVE_POINTS_KEY = "love_points_v1";
+    const COMPLETED_DAYS_KEY = "completed_days_v1";
+    const OPENED_PER_DATE_KEY = "opened_per_date_v1";
+    const ACTIVITY_LOGS_KEY = "activity_logs_v1";
+    const POINTS_PER_TASK = 10;
 
-  // === DAYS DATA ===
-  const daysData = [/* your big daysData array exactly as you have it */];
-
-  const compliments = [
-    "You’re way prettier than your front camera thinks.",
-    "Your personality is my favourite thing you wear.",
-    "You make ordinary days feel like main-character scenes.",
-    "I feel weirdly safer just knowing you exist.",
-    "Your brain + your heart = unfair combo.",
-    "You’re not ‘a lot’. You’re exactly enough.",
-    "I genuinely like who I am when I’m with you.",
-    "You’re my favourite notification on my phone.",
-    "If you vanished from my life, it would be illegal.",
-    "I’m low-key obsessed with you and high-key not sorry."
-  ];
-
-  // === GLOBAL STATE ===
-  const loginScreen = document.getElementById("login-screen");
-  const mainApp = document.getElementById("main-app");
-  const loginInput = document.getElementById("login-password");
-  const loginBtn = document.getElementById("login-button");
-  const loginError = document.getElementById("login-error");
-
-  const adminScreen = document.getElementById("admin-screen");
-  const adminOpenBtn = document.getElementById("admin-open");
-  const adminCloseBtn = document.getElementById("admin-close");
-  const adminLoginSection = document.getElementById("admin-login-section");
-  const adminInput = document.getElementById("admin-password");
-  const adminLoginBtn = document.getElementById("admin-login-button");
-  const adminError = document.getElementById("admin-error");
-  const adminContent = document.getElementById("admin-content");
-  const adminSummary = document.getElementById("admin-summary");
-  const adminTableBody = document.getElementById("admin-table-body");
-
-  const nameInput = document.getElementById("gf-name");
-  const saveNameBtn = document.getElementById("save-name");
-  const nameDisplay = document.getElementById("gf-name-display");
-  const nameInline = document.getElementById("gf-name-inline");
-  const nameFooter = document.getElementById("gf-name-footer");
-
-  const lovePointsSpan = document.getElementById("love-points");
-  const progressText = document.getElementById("progress-text");
-  const progressFill = document.getElementById("progress-fill");
-
-  const modalBackdrop = document.getElementById("modal-backdrop");
-  const modalClose = document.getElementById("modal-close");
-  const modalEmoji = document.getElementById("modal-emoji");
-  const modalTypeLabel = document.getElementById("modal-type-label");
-  const modalDayNum = document.getElementById("modal-day-num");
-  const modalTitleText = document.getElementById("modal-title-text");
-  const modalWish = document.getElementById("modal-wish");
-  const modalActivity = document.getElementById("modal-activity");
-  const doneButton = document.getElementById("done-button");
-  const doneButtonLabel = document.getElementById("done-button-label");
-
-  const grid = document.getElementById("calendar-grid");
-  const dayCardMap = {};
-
-  let lovePoints = Number(localStorage.getItem(LOVE_POINTS_KEY) || "0");
-  let completedDays = [];
-  let openedPerDate = {};
-  let activityLogs = {};
-  let currentDayObj = null;
-
-  // === LOGIN LOGIC ===
-  function showApp() {
-    loginScreen.style.display = "none";
-    mainApp.style.display = "block";
-  }
-
-  function handleLogin() {
-    const val = loginInput.value.trim();
-    if (val === LOGIN_PASSWORD) {
-      localStorage.setItem(LOGIN_KEY, "true");
-      showApp();
-    } else {
-      loginError.textContent = "Wrong code. Try again or spam my chat. 😤";
-    }
-  }
-
-  if (localStorage.getItem(LOGIN_KEY) === "true") {
-    showApp();
-  }
-
-  loginBtn.addEventListener("click", handleLogin);
-  loginInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleLogin();
-    }
-  });
-
-  // === ADMIN LOGIC ===
-  adminOpenBtn.addEventListener("click", () => {
-    adminScreen.style.display = "flex";
-    adminError.textContent = "";
-    adminInput.value = "";
-    adminContent.style.display = "none";
-    adminLoginSection.style.display = "block";
-  });
-
-  adminCloseBtn.addEventListener("click", () => {
-    adminScreen.style.display = "none";
-  });
-
-  function renderAdminView() {
-    const totalCompleted = completedDays.length;
-    const percent = Math.round((totalCompleted / 30) * 100);
-    adminSummary.innerHTML = `
-      <div><strong>Love points:</strong> ${lovePoints}</div>
-      <div><strong>Days completed:</strong> ${totalCompleted} / 30 (${percent}%)</div>
-    `;
-
-    adminTableBody.innerHTML = "";
-    daysData.forEach((d) => {
-      const log = activityLogs[d.day] || {};
-      const tr = document.createElement("tr");
-      const completed = completedDays.includes(d.day);
-      const mood = log.mood != null ? log.mood : "-";
-      const selections = log.selections && log.selections.length
-        ? log.selections.join(" | ")
-        : "-";
-      const answer = log.answer ? log.answer.replace(/\n/g, " / ") : "-";
-
-      tr.innerHTML = `
-        <td>${d.day}</td>
-        <td>${d.title}</td>
-        <td>${d.type}</td>
-        <td>${completed ? "Yes" : "No"}</td>
-        <td>${mood}</td>
-        <td>${selections}</td>
-        <td>${answer}</td>
-      `;
-      adminTableBody.appendChild(tr);
-    });
-  }
-
-  function handleAdminLogin() {
-    const val = adminInput.value.trim();
-    if (val === ADMIN_PASSWORD) {
-      adminError.textContent = "";
-      adminLoginSection.style.display = "none";
-      adminContent.style.display = "block";
-      renderAdminView();
-    } else {
-      adminError.textContent = "Wrong admin code.";
-    }
-  }
-
-  adminLoginBtn.addEventListener("click", handleAdminLogin);
-  adminInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAdminLogin();
-    }
-  });
-
-  // === NAME HANDLING ===
-  function setNameEverywhere(name) {
-    const clean = name && name.trim() ? name.trim() : "Rose";
-    nameDisplay.textContent = clean;
-    nameFooter.textContent = clean;
-    nameInline.textContent = clean;
-  }
-
-  const storedName = localStorage.getItem("gfName");
-  if (storedName) {
-    nameInput.value = storedName;
-    setNameEverywhere(storedName);
-  } else {
-    const defaultName = "Rose";
-    nameInput.value = defaultName;
-    setNameEverywhere(defaultName);
-    localStorage.setItem("gfName", defaultName);
-  }
-
-  saveNameBtn.addEventListener("click", () => {
-    const val = nameInput.value.trim();
-    const nameToSave = val || "Rose";
-    localStorage.setItem("gfName", nameToSave);
-    setNameEverywhere(nameToSave);
-  });
-
-  nameInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      saveNameBtn.click();
-    }
-  });
-
-  // === LOAD STATE (local) ===
-  try {
-    completedDays = JSON.parse(localStorage.getItem(COMPLETED_DAYS_KEY) || "[]");
-  } catch {
-    completedDays = [];
-  }
-  try {
-    openedPerDate = JSON.parse(localStorage.getItem(OPENED_PER_DATE_KEY) || "{}");
-  } catch {
-    openedPerDate = {};
-  }
-  try {
-    activityLogs = JSON.parse(localStorage.getItem(ACTIVITY_LOGS_KEY) || "{}");
-  } catch {
-    activityLogs = {};
-  }
-
-  function updateLovePointsDisplay() {
-    lovePointsSpan.textContent = lovePoints;
-  }
-
-  function updateProgress() {
-    const done = completedDays.length;
-    const total = 30;
-    const percent = (done / total) * 100;
-    progressText.textContent = `${done} / ${total} days completed`;
-    progressFill.style.width = `${percent}%`;
-  }
-
-  // === CLOUD LOAD ===
-  async function loadFromCloud() {
-    try {
-      const snap = await getDoc(userDocRef);
-      if (snap.exists()) {
-        const data = snap.data();
-
-        if (typeof data.lovePoints === "number") {
-          lovePoints = data.lovePoints;
+    // === DAYS DATA ===
+    const daysData = [
+      {
+        day: 1,
+        emoji: "✨",
+        label: "Soft launch",
+        title: "Warm-up wish",
+        type: "loveNote",
+        wish: [
+          "Day 1 of Christmas and I’m starting simple: I’m just really, really glad you exist.",
+          "If life was a playlist, you’d be that one song I never skip. 🔁❤️"
+        ],
+        activity: {
+          heading: "Tiny task",
+          description:
+            "Send me a selfie right now, no overthinking, no filters. I’ll reply with the first three words that pop into my head.",
+          note: "Yes, even if you “look messy”. Especially then."
         }
-        if (Array.isArray(data.completedDays)) {
-          completedDays = data.completedDays;
+      },
+      {
+        day: 2,
+        emoji: "🎄",
+        label: "Cozy vibes",
+        title: "Christmas comfort check",
+        type: "mood",
+        wish: [
+          "If I could, I’d teleport to you with hot chocolate and a blanket right now.",
+          "Since I can’t (rude, I know), let me at least check on your little heart."
+        ],
+        activity: {
+          heading: "Mood check slider",
+          description: "Rate your current mood and tell me why:",
+          note: "Screenshot this and send it to me with a one-line explanation. I wanna know where your head’s at. 🧠💌"
         }
-        if (data.openedPerDate && typeof data.openedPerDate === "object") {
-          openedPerDate = data.openedPerDate;
+      },
+      {
+        day: 3,
+        emoji: "💌",
+        label: "Love spam",
+        title: "Random compliment drop",
+        type: "compliment",
+        wish: [
+          "You know what’s crazy? How accidentally you became my favourite notification.",
+          "I could be doing anything and your name popping up just feels like a mini-Christmas every time."
+        ],
+        activity: {
+          heading: "Tap for a compliment",
+          description:
+            "Hit the button and read your random compliment out loud (yes, out loud). Then send me a voice note re-reading it.",
+          note: "Let me hear how you sound when you talk nicely about yourself. 😏"
         }
-        if (data.activityLogs && typeof data.activityLogs === "object") {
-          activityLogs = data.activityLogs;
+      },
+      {
+        day: 4,
+        emoji: "🔥",
+        label: "Chaos energy",
+        title: "This or that – us edition",
+        type: "thisOrThat",
+        wish: [
+          "We’re very ‘argue and then send a meme’ coded and I love that for us.",
+          "So let’s make it official with a tiny this-or-that game."
+        ],
+        activity: {
+          heading: "Pick your chaos",
+          description:
+            "Choose your answers and then send them to me so I can judge you lovingly.",
+          options: [
+            "Movie night vs. late-night walk",
+            "Hoodies vs. oversized T-shirts",
+            "Video call in bed vs. long voice notes",
+            "Spicy teasing vs. soft compliments"
+          ],
+          note: "Spoiler: whatever you pick, I still choose you."
         }
-        if (typeof data.gfName === "string") {
-          localStorage.setItem("gfName", data.gfName);
-          setNameEverywhere(data.gfName);
-          nameInput.value = data.gfName;
+      },
+      {
+        day: 5,
+        emoji: "🎧",
+        label: "Our soundtrack",
+        title: "Song of the day",
+        type: "simpleTask",
+        wish: [
+          "I wanna know what ‘us’ sounds like in your head.",
+          "Because in mine, it’s somewhere between soft and slightly unhinged. Like us."
+        ],
+        activity: {
+          heading: "Music mission",
+          description:
+            "Pick one song that feels like our vibe today and send it to me.",
+          note: "I’ll reply with a dramatic review + my own song of the day for us. 🎶"
         }
-
-        updateLovePointsDisplay();
-        updateProgress();
-        completedDays.forEach(updateDayCardCompleted);
+      },
+      {
+        day: 6,
+        emoji: "🧠",
+        label: "Mini quiz",
+        title: "How well do you know us?",
+        type: "quiz",
+        wish: [
+          "This is a safe quiz. There are no wrong answers. I just wanna see how your brain stores ‘us’.",
+          "Spoiler: you automatically pass for just being here."
+        ],
+        activity: {
+          heading: "Relationship pop-quiz",
+          description:
+            "Answer these in your head or send me your answers as messages:",
+          note: "Any answer = correct answer. I just want more pieces of your perspective."
+        }
+      },
+      {
+        day: 7,
+        emoji: "📸",
+        label: "Memory lane",
+        title: "Throwback attack",
+        type: "simpleTask",
+        wish: [
+          "Somewhere in your gallery, there’s a picture that reminds you of me.",
+          "And no, it doesn’t have to be my actual face. It can be a meme. Or food. Or a sky. Or chaos."
+        ],
+        activity: {
+          heading: "Gallery challenge",
+          description:
+            "Find one picture in your phone that low-key reminds you of me and send it.",
+          note: "I’ll guess why you picked it. If I’m wrong, you’re allowed to bully me."
+        }
+      },
+      {
+        day: 8,
+        emoji: "📱",
+        label: "Text game",
+        title: "3 words only",
+        type: "loveNote",
+        wish: [
+          "If I had to describe how I feel about you in just three words, my brain crashes.",
+          "But I’m still gonna try. And so are you."
+        ],
+        activity: {
+          heading: "3-word challenge",
+          description:
+            "Send me: 3 words for me, 3 words for ‘us’, 3 words for where you want us to be in a year.",
+          note: "No pressure to be deep. Silly answers are 100% valid."
+        }
+      },
+      {
+        day: 9,
+        emoji: "🎮",
+        label: "Game night",
+        title: "Would you rather – love edition",
+        type: "thisOrThat",
+        wish: [
+          "Time for a tiny would-you-rather. No stakes, just vibes.",
+          "I’m taking notes though. For science. And future dates."
+        ],
+        activity: {
+          heading: "Pick one each",
+          description:
+            "Answer honestly, then ask me the same and compare chaos levels.",
+          options: [
+            "Cuddle in silence vs. talk about everything for hours",
+            "Stay in with snacks vs. dress up and go out",
+            "Watch a rom-com vs. roast reality shows together",
+            "Random road trip vs. planned perfect date"
+          ],
+          note: "If we ever disagree, we just… do both. Problem solved."
+        }
+      },
+      {
+        day: 10,
+        emoji: "🕯️",
+        label: "Soft day",
+        title: "Gratitude but make it us",
+        type: "loveNote",
+        wish: [
+          "Today’s Christmas task is calm: no chaos, no teasing. Just gratitude.",
+          "Thank you for existing in my timeline. I genuinely like life more with you in it."
+        ],
+        activity: {
+          heading: "Grateful mini-list",
+          description:
+            "Send me 3 things you’re grateful for today (they don’t have to be big or deep).",
+          note: "Bonus if one of them is secretly me. I’ll pretend I didn’t notice."
+        }
+      },
+      {
+        day: 11,
+        emoji: "😈",
+        label: "Sassy mode",
+        title: "Roast me (gently)",
+        type: "simpleTask",
+        wish: [
+          "Balance is important: if I love you this much, you’re allowed to roast me a little.",
+          "Keyword: a little. Don’t go full savage, I’m sensitive. 😤"
+        ],
+        activity: {
+          heading: "Roast mission",
+          description:
+            "Send me 3 tiny roasts about me. Then send 3 things you secretly like about me so I don’t cry.",
+          note: "I’ll reply with my own roast/compliment combo for you."
+        }
+      },
+      {
+        day: 12,
+        emoji: "🌙",
+        label: "Night vibe",
+        title: "Late-night brain dump",
+        type: "mood",
+        wish: [
+          "You know those thoughts you get right before sleep when your brain suddenly decides to be emotional?",
+          "Yeah. Those. I want a tiny piece of that."
+        ],
+        activity: {
+          heading: "Sleepy thoughts",
+          description:
+            "Before you sleep tonight, send me 1 random thought about us. Any thought.",
+          note: "No structure, no pressure. Just whatever your half-asleep brain gives you."
+        }
+      },
+      {
+        day: 13,
+        emoji: "🎁",
+        label: "Future gift",
+        title: "Wishlist tease",
+        type: "simpleTask",
+        wish: [
+          "I like spoiling you in small ways, but I also like when you tell me what you want.",
+          "So today is about you being a little selfish. On purpose."
+        ],
+        activity: {
+          heading: "Christmas wish",
+          description:
+            "Send me 3 things you’d love us to do together in the next year. Big or tiny.",
+          note: "This is low-key my planning list. I’m serious."
+        }
+      },
+      {
+        day: 14,
+        emoji: "🫶",
+        label: "Affirmation",
+        title: "You vs. your doubts",
+        type: "compliment",
+        wish: [
+          "Sometimes your brain is mean to you. Just saying, I disagree with it 99% of the time.",
+          "Tonight, I wanna help you fight back a little."
+        ],
+        activity: {
+          heading: "Anti-doubt button",
+          description:
+            "Tap the compliment generator. Read it slowly. Then send me one thing you’re proud of yourself for this year.",
+          note: "I’ll send you one thing I’m proud of you for too."
+        }
+      },
+      {
+        day: 15,
+        emoji: "🍕",
+        label: "Date planning",
+        title: "Dream date menu",
+        type: "thisOrThat",
+        wish: [
+          "Even if we’re not in the same place yet, I’m mentally planning dates already.",
+          "So you better help me customise your experience, madam/sir."
+        ],
+        activity: {
+          heading: "Build-a-date",
+          description:
+            "Pick one from each and send your combo to me as ‘My ideal date: …’",
+          options: [
+            "Food: Pizza / Sushi / Street food / Dessert only",
+            "Vibe: Chill café / Rooftop / Beach / Netflix cave",
+            "Energy: Loud + fun / Quiet + deep / Mixed chaos"
+          ],
+          note: "If you send this, I’m basically obligated to make it happen one day."
+        }
+      },
+      {
+        day: 16,
+        emoji: "💭",
+        label: "What if",
+        title: "Alternate universe us",
+        type: "simpleTask",
+        wish: [
+          "In some universe we probably met earlier, or differently.",
+          "I like this version though. The slightly messy, delayed, but still magical one."
+        ],
+        activity: {
+          heading: "AU prompt",
+          description:
+            "Send me one ‘what if’ about us. (e.g. ‘What if we met in school?’)",
+          note: "I’ll reply with how I think we’d act in that timeline."
+        }
+      },
+      {
+        day: 17,
+        emoji: "📖",
+        label: "Story time",
+        title: "First impression check",
+        type: "quiz",
+        wish: [
+          "I will never get tired of hearing how you saw me in the beginning.",
+          "And how that changed. Or didn’t. 👀"
+        ],
+        activity: {
+          heading: "Story mini-quiz",
+          description:
+            "Answer these in text / voice note and send it to me:",
+          note: "I’ll respond with my version too. Fair trade."
+        }
+      },
+      {
+        day: 18,
+        emoji: "💫",
+        label: "Manifesting",
+        title: "Future us spell",
+        type: "mood",
+        wish: [
+          "Consider this a tiny Christmas ritual: we manifest good things for us only.",
+          "No bad vibes allowed in this section."
+        ],
+        activity: {
+          heading: "Manifest line",
+          description:
+            "Complete this and send it: ‘One year from now, I want us to be…’",
+          note: "Doesn’t have to be realistic. Just honest."
+        }
+      },
+      {
+        day: 19,
+        emoji: "😌",
+        label: "Comfort",
+        title: "Safe place check",
+        type: "loveNote",
+        wish: [
+          "I hope you know you’re allowed to be fully yourself with me. No performing. No ‘looking okay’ when you’re not.",
+          "You’re my person. Even on the messy days."
+        ],
+        activity: {
+          heading: "Honesty card",
+          description:
+            "Tell me one thing that’s been stressing you lately, even if you think it’s ‘small’.",
+          note: "My job: listen, not fix (unless you want suggestions)."
+        }
+      },
+      {
+        day: 20,
+        emoji: "🎮",
+        label: "Mini game",
+        title: "Lightning questions",
+        type: "thisOrThat",
+        wish: [
+          "Fast questions, no overthinking. Just vibes.",
+          "Send your answers back as a quick list and I’ll do mine."
+        ],
+        activity: {
+          heading: "Speed round",
+          description: "Answer with the first thing that comes to mind:",
+          options: [
+            "Morning text or goodnight text?",
+            "Calls or long chats?",
+            "Planning or pure spontaneity?",
+            "Matching PJs or matching hoodies?"
+          ],
+          note: "Yes, matching fits will happen. This is foreshadowing."
+        }
+      },
+      {
+        day: 21,
+        emoji: "📦",
+        label: "Care package",
+        title: "If I could send a box",
+        type: "simpleTask",
+        wish: [
+          "If teleportation was a thing, I’d send you a box with snacks, a hoodie, and a handwritten letter.",
+          "Until then, we use words."
+        ],
+        activity: {
+          heading: "Virtual care box",
+          description:
+            "Tell me 3 things you’d want in a care package from me.",
+          note: "I’ll tell you what I’d actually pack in real life."
+        }
+      },
+      {
+        day: 22,
+        emoji: "❤️",
+        label: "Soft hour",
+        title: "Things I adore",
+        type: "compliment",
+        wish: [
+          "There are so many tiny things about you that make my brain go: ‘wow I’m obsessed.’",
+          "Let me generate a few and share them with you."
+        ],
+        activity: {
+          heading: "Love generator",
+          description:
+            "Tap to generate a random ‘thing I adore about you’. Then send me one back about me.",
+          note: "We’re doing mutual appreciation, no escaping."
+        }
+      },
+      {
+        day: 23,
+        emoji: "🎅",
+        label: "Santa mode",
+        title: "If I was your Santa",
+        type: "simpleTask",
+        wish: [
+          "If I was your personal Santa, my only job would be to make December easier for you.",
+          "Even from a distance."
+        ],
+        activity: {
+          heading: "Santa request",
+          description:
+            "Tell me one realistic thing I can do this month to make your life a little lighter.",
+          note: "I’ll actually try to do it. This is legally binding. (Kind of.)"
+        }
+      },
+      {
+        day: 24,
+        emoji: "🕯️",
+        label: "Christmas Eve",
+        title: "Slow night promise",
+        type: "loveNote",
+        wish: [
+          "Christmas Eve rule: no pressure, no expectations. Just us being present however we can.",
+          "Call, chat, voice notes, memes – anything counts as long as it’s us."
+        ],
+        activity: {
+          heading: "Eve ritual",
+          description:
+            "At some point tonight, send me a ‘right now’ pic (whatever you’re doing).",
+          note: "I’ll send mine too, and we’ll pretend we’re sharing the same space for a second."
+        }
+      },
+      {
+        day: 25,
+        emoji: "🎄",
+        label: "Christmas Day",
+        title: "Big Christmas wish",
+        type: "loveNote",
+        wish: [
+          "Merry Christmas, love. 🎄",
+          "My biggest wish this year is simple: more time with you. In calls, in chats, in real life – all of it."
+        ],
+        activity: {
+          heading: "Christmas message",
+          description:
+            "Send me one long paragraph about anything: us, your day, your hopes, your chaos.",
+          note: "I’ll reply with a full Christmas letter back."
+        }
+      },
+      {
+        day: 26,
+        emoji: "💬",
+        label: "Post-Christmas",
+        title: "Debrief mode",
+        type: "simpleTask",
+        wish: [
+          "Okay, Christmas done. Now we gossip.",
+          "I want the debrief: feelings, chaos, drama, all of it."
+        ],
+        activity: {
+          heading: "Debrief time",
+          description:
+            "Tell me: what was your favourite part of this Christmas (even if it’s something tiny)?",
+          note: "And don’t say ‘nothing’, I will fight you."
+        }
+      },
+      {
+        day: 27,
+        emoji: "📆",
+        label: "Year review",
+        title: "Us this year",
+        type: "quiz",
+        wish: [
+          "Even if this year wasn’t perfect, I’m really glad it had you in it.",
+          "Let’s rate us, just for fun."
+        ],
+        activity: {
+          heading: "Year rating",
+          description:
+            "Answer: 1) Best thing about us this year? 2) One thing you want more of next year? 3) One thing you wanna leave behind?",
+          note: "I’ll answer the same for you."
+        }
+      },
+      {
+        day: 28,
+        emoji: "🧩",
+        label: "Tiny secret",
+        title: "Tell me a thing",
+        type: "simpleTask",
+        wish: [
+          "I love when you let me into your brain a bit more.",
+          "So here’s a small gentle nosey prompt."
+        ],
+        activity: {
+          heading: "Secret share",
+          description:
+            "Tell me one thing you’ve been wanting to say but haven’t yet – silly or serious.",
+          note: "No judgement. Ever."
+        }
+      },
+      {
+        day: 29,
+        emoji: "🌌",
+        label: "Big picture",
+        title: "Why you matter",
+        type: "loveNote",
+        wish: [
+          "You’re not just ‘someone I talk to’. You’re very much main-character energy in my life now.",
+          "Thank you for letting me exist in your world too."
+        ],
+        activity: {
+          heading: "Anchor moment",
+          description:
+            "Send me one moment (even small) where you felt really happy we had each other.",
+          note: "I’ll send mine back. Spoiler: I have several."
+        }
+      },
+      {
+        day: 30,
+        emoji: "🎆",
+        label: "Almost New Year",
+        title: "Soft reset",
+        type: "mood",
+        wish: [
+          "30 days later and I’m still choosing you. Every day.",
+          "Let’s carry this energy into the new year, yeah?"
+        ],
+        activity: {
+          heading: "New year intention",
+          description:
+            "Complete this and send it: ‘Next year, I want us to…’",
+          note: "Keep this message somewhere. We’ll revisit it together."
+        }
       }
-    } catch (err) {
-      console.error("Error loading from Firestore:", err);
+    ];
+
+    const compliments = [
+      "You’re way prettier than your front camera thinks.",
+      "Your personality is my favourite thing you wear.",
+      "You make ordinary days feel like main-character scenes.",
+      "I feel weirdly safer just knowing you exist.",
+      "Your brain + your heart = unfair combo.",
+      "You’re not ‘a lot’. You’re exactly enough.",
+      "I genuinely like who I am when I’m with you.",
+      "You’re my favourite notification on my phone.",
+      "If you vanished from my life, it would be illegal.",
+      "I’m low-key obsessed with you and high-key not sorry."
+    ];
+
+    // === GLOBAL STATE ===
+    const loginScreen = document.getElementById("login-screen");
+    const mainApp = document.getElementById("main-app");
+    const loginInput = document.getElementById("login-password");
+    const loginBtn = document.getElementById("login-button");
+    const loginError = document.getElementById("login-error");
+
+    const adminScreen = document.getElementById("admin-screen");
+    const adminOpenBtn = document.getElementById("admin-open");
+    const adminCloseBtn = document.getElementById("admin-close");
+    const adminLoginSection = document.getElementById("admin-login-section");
+    const adminInput = document.getElementById("admin-password");
+    const adminLoginBtn = document.getElementById("admin-login-button");
+    const adminError = document.getElementById("admin-error");
+    const adminContent = document.getElementById("admin-content");
+    const adminSummary = document.getElementById("admin-summary");
+    const adminTableBody = document.getElementById("admin-table-body");
+
+    const nameInput = document.getElementById("gf-name");
+    const saveNameBtn = document.getElementById("save-name");
+    const nameDisplay = document.getElementById("gf-name-display");
+    const nameInline = document.getElementById("gf-name-inline");
+    const nameFooter = document.getElementById("gf-name-footer");
+
+    const lovePointsSpan = document.getElementById("love-points");
+    const progressText = document.getElementById("progress-text");
+    const progressFill = document.getElementById("progress-fill");
+
+    const modalBackdrop = document.getElementById("modal-backdrop");
+    const modalClose = document.getElementById("modal-close");
+    const modalEmoji = document.getElementById("modal-emoji");
+    const modalTypeLabel = document.getElementById("modal-type-label");
+    const modalDayNum = document.getElementById("modal-day-num");
+    const modalTitleText = document.getElementById("modal-title-text");
+    const modalWish = document.getElementById("modal-wish");
+    const modalActivity = document.getElementById("modal-activity");
+    const doneButton = document.getElementById("done-button");
+    const doneButtonLabel = document.getElementById("done-button-label");
+
+    const grid = document.getElementById("calendar-grid");
+    const dayCardMap = {};
+
+    let lovePoints = Number(localStorage.getItem(LOVE_POINTS_KEY) || "0");
+    let completedDays = [];
+    let openedPerDate = {};
+    let activityLogs = {};
+    let currentDayObj = null;
+
+    // === LOGIN LOGIC ===
+    function showApp() {
+      loginScreen.style.display = "none";
+      mainApp.style.display = "block";
     }
-  }
 
-  // === CLOUD SAVE ===
-  async function saveLoveState() {
-    // local backup
-    localStorage.setItem(LOVE_POINTS_KEY, String(lovePoints));
-    localStorage.setItem(COMPLETED_DAYS_KEY, JSON.stringify(completedDays));
-    localStorage.setItem(OPENED_PER_DATE_KEY, JSON.stringify(openedPerDate));
-    localStorage.setItem(ACTIVITY_LOGS_KEY, JSON.stringify(activityLogs));
-
-    const gfNameToSave = localStorage.getItem("gfName") || "Rose";
-
-    try {
-      await setDoc(
-        userDocRef,
-        {
-          lovePoints,
-          completedDays,
-          openedPerDate,
-          activityLogs,
-          gfName: gfNameToSave,
-          updatedAt: new Date().toISOString(),
-        },
-        { merge: true }
-      );
-    } catch (err) {
-      console.error("Error saving to Firestore:", err);
+    function handleLogin() {
+      const val = loginInput.value.trim();
+      if (val === LOGIN_PASSWORD) {
+        localStorage.setItem(LOGIN_KEY, "true");
+        showApp();
+      } else {
+        loginError.textContent = "Wrong code. Try again or spam my chat. 😤";
+      }
     }
-  }
 
-  updateLovePointsDisplay();
-  updateProgress();
-
-  function isDayCompleted(dayNumber) {
-    return completedDays.includes(dayNumber);
-  }
-
-  function ensureDayLog(dayNumber) {
-    if (!activityLogs[dayNumber]) {
-      activityLogs[dayNumber] = {};
+    if (localStorage.getItem(LOGIN_KEY) === "true") {
+      showApp();
     }
-    return activityLogs[dayNumber];
-  }
 
-  // === CALENDAR RENDER ===
-  function isToday(dayNumber) {
-    const now = new Date();
-    const month = now.getMonth();
-    if (month !== 11) return false;
-    return now.getDate() === dayNumber;
-  }
+    loginBtn.addEventListener("click", handleLogin);
+    loginInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleLogin();
+      }
+    });
 
-  function isLocked(dayNumber) {
-    const now = new Date();
-    const month = now.getMonth();
-    if (month !== 11) return false;
-    return dayNumber > now.getDate();
-  }
+    // === ADMIN LOGIC ===
+    adminOpenBtn.addEventListener("click", () => {
+      adminScreen.style.display = "flex";
+      adminError.textContent = "";
+      adminInput.value = "";
+      adminContent.style.display = "none";
+      adminLoginSection.style.display = "block";
+    });
 
-  function getTodayKey() {
-    const now = new Date();
-    return now.toISOString().slice(0, 10);
-  }
+    adminCloseBtn.addEventListener("click", () => {
+      adminScreen.style.display = "none";
+    });
 
-  daysData.forEach((d) => {
-    const card = document.createElement("button");
-    card.className = "day";
-    card.dataset.day = String(d.day);
+    function renderAdminView() {
+      const totalCompleted = completedDays.length;
+      const percent = Math.round((totalCompleted / 30) * 100);
+      adminSummary.innerHTML = `
+        <div><strong>Love points:</strong> ${lovePoints}</div>
+        <div><strong>Days completed:</strong> ${totalCompleted} / 30 (${percent}%)</div>
+      `;
 
-    const locked = isLocked(d.day);
-    if (locked) card.classList.add("locked");
-    if (!locked && isToday(d.day)) card.classList.add("today");
-    if (isDayCompleted(d.day)) card.classList.add("completed");
+      adminTableBody.innerHTML = "";
+      daysData.forEach((d) => {
+        const log = activityLogs[d.day] || {};
+        const tr = document.createElement("tr");
+        const completed = completedDays.includes(d.day);
+        const mood = log.mood != null ? log.mood : "-";
+        const selections = log.selections && log.selections.length
+          ? log.selections.join(" | ")
+          : "-";
+        const answer = log.answer ? log.answer.replace(/\n/g, " / ") : "-";
 
-    card.innerHTML = `
-      <div class="day-main">
-        <div>
-          <div class="day-number">${d.day}</div>
-          <div class="day-tag">${isDayCompleted(d.day) ? "Completed" : d.label}</div>
-        </div>
-        <div class="day-emoji">${locked ? "🔒" : isDayCompleted(d.day) ? "❤️" : d.emoji}</div>
-      </div>
-      <div class="day-footer">
-        <div class="day-status">
-          <div class="dot"></div>
-          <span>${locked ? "Locked (future)" : isDayCompleted(d.day) ? "Done · reopen" : "Ready to open"}</span>
-        </div>
-        <div class="day-cta">
-          ${locked ? "Patience, elf ✨" : isDayCompleted(d.day) ? "View again" : "Open ✨"}
-        </div>
-      </div>
-    `;
-
-    if (!locked) {
-      card.addEventListener("click", () => {
-        const todayKey = getTodayKey();
-        const previouslyOpened = openedPerDate[todayKey];
-
-        if (previouslyOpened && previouslyOpened !== d.day) {
-          alert(
-            `You already opened Day ${previouslyOpened} today.\n\nOne card per day only. Come back tomorrow for a new one. 💌`
-          );
-          return;
-        }
-
-        if (!previouslyOpened) {
-          openedPerDate[todayKey] = d.day;
-          saveLoveState();
-        }
-
-        openModal(d);
+        tr.innerHTML = `
+          <td>${d.day}</td>
+          <td>${d.title}</td>
+          <td>${d.type}</td>
+          <td>${completed ? "Yes" : "No"}</td>
+          <td>${mood}</td>
+          <td>${selections}</td>
+          <td>${answer}</td>
+        `;
+        adminTableBody.appendChild(tr);
       });
     }
 
-    grid.appendChild(card);
-    dayCardMap[d.day] = card;
-  });
+    function handleAdminLogin() {
+      const val = adminInput.value.trim();
+      if (val === ADMIN_PASSWORD) {
+        adminError.textContent = "";
+        adminLoginSection.style.display = "none";
+        adminContent.style.display = "block";
+        renderAdminView();
+      } else {
+        adminError.textContent = "Wrong admin code.";
+      }
+    }
 
-  function updateDayCardCompleted(dayNumber) {
-    const card = dayCardMap[dayNumber];
-    if (!card) return;
-    card.classList.add("completed");
-    const tag = card.querySelector(".day-tag");
-    if (tag) tag.textContent = "Completed";
-    const status = card.querySelector(".day-status span:last-child");
-    if (status) status.textContent = "Done · reopen";
-    const cta = card.querySelector(".day-cta");
-    if (cta) cta.textContent = "View again";
-    const emoji = card.querySelector(".day-emoji");
-    if (emoji) emoji.textContent = "❤️";
-  }
+    adminLoginBtn.addEventListener("click", handleAdminLogin);
+    adminInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleAdminLogin();
+      }
+    });
 
-  // === MODAL + ACTIVITY (unchanged from your version) ===
-  // keep your openModal, closeModal, renderActivity, etc. exactly as you have them.
+    // === NAME HANDLING ===
+    function setNameEverywhere(name) {
+      const clean = name && name.trim() ? name.trim() : "Rose";
+      nameDisplay.textContent = clean;
+      nameFooter.textContent = clean;
+      nameInline.textContent = clean;
+    }
 
-  // ... (your existing modal and activity code here) ...
+    const storedName = localStorage.getItem("gfName");
+    if (storedName) {
+      nameInput.value = storedName;
+      setNameEverywhere(storedName);
+    } else {
+      const defaultName = "Rose";
+      nameInput.value = defaultName;
+      setNameEverywhere(defaultName);
+      localStorage.setItem("gfName", defaultName);
+    }
 
-  // At the very bottom of the script:
-  loadFromCloud();
-</script>
+    saveNameBtn.addEventListener("click", () => {
+      const val = nameInput.value.trim();
+      const nameToSave = val || "Rose";
+      localStorage.setItem("gfName", nameToSave);
+      setNameEverywhere(nameToSave);
+    });
 
+    nameInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        saveNameBtn.click();
+      }
+    });
+
+    // === LOAD STATE (local) ===
+    try {
+      completedDays = JSON.parse(localStorage.getItem(COMPLETED_DAYS_KEY) || "[]");
+    } catch {
+      completedDays = [];
+    }
+    try {
+      openedPerDate = JSON.parse(localStorage.getItem(OPENED_PER_DATE_KEY) || "{}");
+    } catch {
+      openedPerDate = {};
+    }
+    try {
+      activityLogs = JSON.parse(localStorage.getItem(ACTIVITY_LOGS_KEY) || "{}");
+    } catch {
+      activityLogs = {};
+    }
+
+    function updateLovePointsDisplay() {
+      lovePointsSpan.textContent = lovePoints;
+    }
+
+    function updateProgress() {
+      const done = completedDays.length;
+      const total = 30;
+      const percent = (done / total) * 100;
+      progressText.textContent = `${done} / ${total} days completed`;
+      progressFill.style.width = `${percent}%`;
+    }
+
+    // === CLOUD LOAD ===
+    async function loadFromCloud() {
+      try {
+        const snap = await getDoc(userDocRef);
+        if (snap.exists()) {
+          const data = snap.data();
+
+          if (typeof data.lovePoints === "number") {
+            lovePoints = data.lovePoints;
+          }
+          if (Array.isArray(data.completedDays)) {
+            completedDays = data.completedDays;
+          }
+          if (data.openedPerDate && typeof data.openedPerDate === "object") {
+            openedPerDate = data.openedPerDate;
+          }
+          if (data.activityLogs && typeof data.activityLogs === "object") {
+            activityLogs = data.activityLogs;
+          }
+          if (typeof data.gfName === "string") {
+            localStorage.setItem("gfName", data.gfName);
+            setNameEverywhere(data.gfName);
+            nameInput.value = data.gfName;
+          }
+
+          updateLovePointsDisplay();
+          updateProgress();
+          completedDays.forEach(updateDayCardCompleted);
+        }
+      } catch (err) {
+        console.error("Error loading from Firestore:", err);
+      }
+    }
+
+    // === CLOUD SAVE ===
+    async function saveLoveState() {
+      // local backup
+      localStorage.setItem(LOVE_POINTS_KEY, String(lovePoints));
+      localStorage.setItem(COMPLETED_DAYS_KEY, JSON.stringify(completedDays));
+      localStorage.setItem(OPENED_PER_DATE_KEY, JSON.stringify(openedPerDate));
+      localStorage.setItem(ACTIVITY_LOGS_KEY, JSON.stringify(activityLogs));
+
+      const gfNameToSave = localStorage.getItem("gfName") || "Rose";
+
+      try {
+        await setDoc(
+          userDocRef,
+          {
+            lovePoints,
+            completedDays,
+            openedPerDate,
+            activityLogs,
+            gfName: gfNameToSave,
+            updatedAt: new Date().toISOString(),
+          },
+          { merge: true }
+        );
+      } catch (err) {
+        console.error("Error saving to Firestore:", err);
+      }
+    }
+
+    updateLovePointsDisplay();
+    updateProgress();
+
+    function isDayCompleted(dayNumber) {
+      return completedDays.includes(dayNumber);
+    }
+
+    function ensureDayLog(dayNumber) {
+      if (!activityLogs[dayNumber]) {
+        activityLogs[dayNumber] = {};
+      }
+      return activityLogs[dayNumber];
+    }
+
+    // === CALENDAR RENDER ===
+    function isToday(dayNumber) {
+      const now = new Date();
+      const month = now.getMonth();
+      if (month !== 11) return false;
+      return now.getDate() === dayNumber;
+    }
+
+    function isLocked(dayNumber) {
+      const now = new Date();
+      const month = now.getMonth();
+      if (month !== 11) return false; // not December => all open
+      return dayNumber > now.getDate();
+    }
+
+    function getTodayKey() {
+      const now = new Date();
+      return now.toISOString().slice(0, 10);
+    }
+
+    daysData.forEach((d) => {
+      const card = document.createElement("button");
+      card.className = "day";
+      card.dataset.day = String(d.day);
+
+      const locked = isLocked(d.day);
+      if (locked) card.classList.add("locked");
+      if (!locked && isToday(d.day)) card.classList.add("today");
+      if (isDayCompleted(d.day)) card.classList.add("completed");
+
+      card.innerHTML = `
+        <div class="day-main">
+          <div>
+            <div class="day-number">${d.day}</div>
+            <div class="day-tag">${isDayCompleted(d.day) ? "Completed" : d.label}</div>
+          </div>
+          <div class="day-emoji">${locked ? "🔒" : isDayCompleted(d.day) ? "❤️" : d.emoji}</div>
+        </div>
+        <div class="day-footer">
+          <div class="day-status">
+            <div class="dot"></div>
+            <span>${locked ? "Locked (future)" : isDayCompleted(d.day) ? "Done · reopen" : "Ready to open"}</span>
+          </div>
+          <div class="day-cta">
+            ${locked ? "Patience, elf ✨" : isDayCompleted(d.day) ? "View again" : "Open ✨"}
+          </div>
+        </div>
+      `;
+
+      if (!locked) {
+        card.addEventListener("click", () => {
+          const todayKey = getTodayKey();
+          const previouslyOpened = openedPerDate[todayKey];
+
+          if (previouslyOpened && previouslyOpened !== d.day) {
+            alert(
+              `You already opened Day ${previouslyOpened} today.\n\nOne card per day only. Come back tomorrow for a new one. 💌`
+            );
+            return;
+          }
+
+          if (!previouslyOpened) {
+            openedPerDate[todayKey] = d.day;
+            saveLoveState();
+          }
+
+          openModal(d);
+        });
+      }
+
+      grid.appendChild(card);
+      dayCardMap[d.day] = card;
+    });
+
+    function updateDayCardCompleted(dayNumber) {
+      const card = dayCardMap[dayNumber];
+      if (!card) return;
+      card.classList.add("completed");
+      const tag = card.querySelector(".day-tag");
+      if (tag) tag.textContent = "Completed";
+      const status = card.querySelector(".day-status span:last-child");
+      if (status) status.textContent = "Done · reopen";
+      const cta = card.querySelector(".day-cta");
+      if (cta) cta.textContent = "View again";
+      const emoji = card.querySelector(".day-emoji");
+      if (emoji) emoji.textContent = "❤️";
+    }
+
+    // === MODAL + ACTIVITY ===
+    function openModal(dayObj) {
+      currentDayObj = dayObj;
+      modalEmoji.textContent = dayObj.emoji;
+      modalDayNum.textContent = `Day ${dayObj.day}`;
+      modalTitleText.textContent = `· ${dayObj.title}`;
+      modalTypeLabel.textContent = {
+        loveNote: "Soft love note",
+        mood: "Mood check",
+        compliment: "Compliment drop",
+        thisOrThat: "Mini game",
+        simpleTask: "Tiny mission",
+        quiz: "Story quiz"
+      }[dayObj.type] || "Love drop";
+
+      modalWish.innerHTML = "";
+      (dayObj.wish || []).forEach((line) => {
+        const p = document.createElement("p");
+        p.innerHTML = line;
+        modalWish.appendChild(p);
+      });
+
+      renderActivity(dayObj);
+
+      const completed = isDayCompleted(dayObj.day);
+      updateDoneButtonState(completed);
+
+      modalBackdrop.classList.add("active");
+    }
+
+    function closeModal() {
+      modalBackdrop.classList.remove("active");
+      currentDayObj = null;
+    }
+
+    function updateDoneButtonState(completed) {
+      if (completed) {
+        doneButton.classList.add("disabled");
+        doneButton.disabled = true;
+        doneButtonLabel.textContent = "Already marked as done ❤️";
+      } else {
+        doneButton.classList.remove("disabled");
+        doneButton.disabled = false;
+        doneButtonLabel.textContent = `Mark this task as done (+${POINTS_PER_TASK} ❤️)`;
+      }
+    }
+
+    doneButton.addEventListener("click", () => {
+      if (!currentDayObj) return;
+      const dayNumber = currentDayObj.day;
+      if (isDayCompleted(dayNumber)) return;
+
+      completedDays.push(dayNumber);
+      lovePoints += POINTS_PER_TASK;
+      updateLovePointsDisplay();
+      updateDayCardCompleted(dayNumber);
+      updateDoneButtonState(true);
+      updateProgress();
+      saveLoveState();
+
+      alert(
+        `Task for Day ${dayNumber} marked as done!\n\n+${POINTS_PER_TASK} love points unlocked. You overachiever. ❤️`
+      );
+    });
+
+    modalClose.addEventListener("click", closeModal);
+    modalBackdrop.addEventListener("click", (e) => {
+      if (e.target === modalBackdrop) closeModal();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeModal();
+    });
+
+    function renderActivity(dayObj) {
+      const act = dayObj.activity || {};
+      const dayLog = ensureDayLog(dayObj.day);
+
+      modalActivity.innerHTML = `
+        <div class="activity-header">
+          <span class="label">
+            <span class="icon">${
+              dayObj.type === "thisOrThat"
+                ? "🎮"
+                : dayObj.type === "mood"
+                ? "📊"
+                : dayObj.type === "quiz"
+                ? "🧠"
+                : dayObj.type === "compliment"
+                ? "💖"
+                : "📝"
+            }</span>
+            <span>${act.heading || "Activity"}</span>
+          </span>
+          <span class="activity-badge">${dayObj.label}</span>
+        </div>
+        <div class="activity-body">
+          <div>${act.description || ""}</div>
+        </div>
+      `;
+
+      const body = modalActivity.querySelector(".activity-body");
+
+      // thisOrThat options with highlight
+      if (dayObj.type === "thisOrThat" && act.options?.length) {
+        const wrap = document.createElement("div");
+        wrap.className = "activity-options";
+        const selectedSet = new Set(dayLog.selections || []);
+
+        act.options.forEach((opt) => {
+          const row = document.createElement("div");
+          row.className = "option-row";
+          if (selectedSet.has(opt)) row.classList.add("selected");
+          row.innerHTML = `
+            <span class="text">${opt}</span>
+            <button class="option-btn" type="button">Pick 🫰</button>
+          `;
+          const btn = row.querySelector("button");
+          const toggleSelection = () => {
+            const log = ensureDayLog(dayObj.day);
+            log.selections = log.selections || [];
+            if (row.classList.contains("selected")) {
+              row.classList.remove("selected");
+              log.selections = log.selections.filter((x) => x !== opt);
+            } else {
+              row.classList.add("selected");
+              if (!log.selections.includes(opt)) log.selections.push(opt);
+            }
+            activityLogs[dayObj.day] = log;
+            saveLoveState();
+          };
+          row.addEventListener("click", (e) => {
+            if (e.target.tagName.toLowerCase() === "button") {
+              toggleSelection();
+            } else {
+              toggleSelection();
+            }
+          });
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleSelection();
+          });
+          wrap.appendChild(row);
+        });
+        body.appendChild(wrap);
+      }
+
+      // Compliment generator
+      if (dayObj.type === "compliment") {
+        const btn = document.createElement("button");
+        btn.className = "primary-btn";
+        btn.type = "button";
+        btn.innerHTML = `<span class="icon">💖</span><span>Tap for compliment</span>`;
+
+        const out = document.createElement("div");
+        out.className = "compliment-output";
+        out.textContent =
+          dayLog.lastCompliment ||
+          "Tap to generate a random compliment just for you.";
+
+        btn.addEventListener("click", () => {
+          const text =
+            compliments[Math.floor(Math.random() * compliments.length)];
+          out.textContent = text;
+          const log = ensureDayLog(dayObj.day);
+          log.lastCompliment = text;
+          activityLogs[dayObj.day] = log;
+          saveLoveState();
+        });
+
+        body.appendChild(btn);
+        body.appendChild(out);
+      }
+
+      // Mood slider
+      if (dayObj.type === "mood") {
+        const row = document.createElement("div");
+        row.className = "mood-slider-row";
+        const initialValue =
+          dayLog.mood != null && !Number.isNaN(Number(dayLog.mood))
+            ? Number(dayLog.mood)
+            : 7;
+        row.innerHTML = `
+          <input type="range" min="0" max="10" value="${initialValue}" />
+          <div class="mood-label">Soft okay 😊</div>
+        `;
+        const slider = row.querySelector("input");
+        const label = row.querySelector(".mood-label");
+        const moods = [
+          "Send help 🫠",
+          "Ehh, mid 😶",
+          "Kinda okay 🙂",
+          "Soft okay 😊",
+          "Low-key happy 🥰",
+          "Main character energy ✨"
+        ];
+        const updateLabel = (val) => {
+          const n = Number(val);
+          if (n <= 2) label.textContent = moods[0];
+          else if (n <= 4) label.textContent = moods[1];
+          else if (n <= 6) label.textContent = moods[2];
+          else if (n <= 7) label.textContent = moods[3];
+          else if (n <= 8) label.textContent = moods[4];
+          else label.textContent = moods[5];
+        };
+        updateLabel(initialValue);
+
+        slider.addEventListener("input", () => {
+          updateLabel(slider.value);
+          const log = ensureDayLog(dayObj.day);
+          log.mood = slider.value;
+          activityLogs[dayObj.day] = log;
+          saveLoveState();
+        });
+
+        body.appendChild(row);
+      }
+
+      // Quiz questions
+      if (dayObj.type === "quiz") {
+        const quizWrap = document.createElement("div");
+        quizWrap.className = "quiz-text";
+
+        if (dayObj.day === 6) {
+          quizWrap.innerHTML = `
+            <div class="quiz-question">
+              <strong>1.</strong> What was the first thing you noticed about me?
+            </div>
+            <div class="quiz-question">
+              <strong>2.</strong> When did you realise you actually like me fr?
+            </div>
+            <div class="quiz-question">
+              <strong>3.</strong> One word that describes our vibe?
+            </div>
+          `;
+        } else if (dayObj.day === 17) {
+          quizWrap.innerHTML = `
+            <div class="quiz-question">
+              <strong>1.</strong> First impression of me in 3 words?
+            </div>
+            <div class="quiz-question">
+              <strong>2.</strong> What do you think changed the most since then?
+            </div>
+            <div class="quiz-question">
+              <strong>3.</strong> What do you want to *never* change about us?
+            </div>
+          `;
+        } else if (dayObj.day === 27) {
+          quizWrap.innerHTML = `
+            <div class="quiz-question">
+              <strong>1.</strong> Best thing about us this year?
+            </div>
+            <div class="quiz-question">
+              <strong>2.</strong> One thing you want more of next year?
+            </div>
+            <div class="quiz-question">
+              <strong>3.</strong> One thing you want to leave behind?
+            </div>
+          `;
+        } else {
+          quizWrap.innerHTML = `
+            <div class="quiz-question">
+              <strong>1.</strong> When did you first think “okay, this might be something real”?
+            </div>
+            <div class="quiz-question">
+              <strong>2.</strong> What’s one tiny moment you keep replaying?
+            </div>
+          `;
+        }
+
+        body.appendChild(quizWrap);
+      }
+
+      // Optional answer box (for any type)
+      const answerBlock = document.createElement("div");
+      answerBlock.className = "answer-block";
+      answerBlock.innerHTML = `
+        <div>Optional: write your answer / thoughts here if you want me to read it inside the site too. 💌</div>
+        <textarea placeholder="Type here if you want..."></textarea>
+      `;
+      const textarea = answerBlock.querySelector("textarea");
+      textarea.value = dayLog.answer || "";
+      textarea.addEventListener("input", () => {
+        const log = ensureDayLog(dayObj.day);
+        log.answer = textarea.value;
+        activityLogs[dayObj.day] = log;
+        saveLoveState();
+      });
+      body.appendChild(answerBlock);
+
+      if (act.note) {
+        const note = document.createElement("div");
+        note.className = "activity-note";
+        note.textContent = act.note;
+        body.appendChild(note);
+      }
+    }
+
+    // finally, load cloud state
+    loadFromCloud();
+  </script>
 </body>
 </html>
-
-
-
-
