@@ -1528,6 +1528,9 @@
     // === BASIC CONFIG ===
     const LOGIN_PASSWORD = "mychristmascode"; // <<< change for Rose
     const ADMIN_PASSWORD = "adminrose";       // <<< change for you
+      // NEW: backend endpoint to sync data
+const SYNC_ENDPOINT = "https://your-backend-url.com/api/rose-xmas";
+
     const LOGIN_KEY = "xmas_login_ok_v1";
     const LOVE_POINTS_KEY = "love_points_v1";
     const COMPLETED_DAYS_KEY = "completed_days_v1";
@@ -2306,6 +2309,33 @@
       }
       return activityLogs[dayNumber];
     }
+    // Simple sync to server (fire-and-forget)
+let syncTimeout = null;
+
+function syncData() {
+  // small debounce so multiple changes in a few ms don't spam server
+  if (syncTimeout) clearTimeout(syncTimeout);
+
+  syncTimeout = setTimeout(() => {
+    const payload = {
+      userId: "rose", // or any id you want
+      timestamp: new Date().toISOString(),
+      lovePoints,
+      completedDays,
+      openedPerDate,
+      activityLogs
+    };
+
+    fetch(SYNC_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).catch(() => {
+      // fail silently, localStorage still has everything
+    });
+  }, 500);
+}
+
 
     // === CALENDAR RENDER ===
     function isToday(dayNumber) {
@@ -2696,3 +2726,4 @@
   </script>
 </body>
 </html>
+
