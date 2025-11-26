@@ -1558,848 +1558,668 @@
   </div>
 
  <script type="module">
-  // --- FIREBASE SETUP (with delete for reset) ---
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-  import {
-    getFirestore,
-    doc,
-    getDoc,
-    setDoc,
-    deleteDoc,
-  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDDmoePihLpjM5pmkZuIQAAajw8mtM9UU4",
-    authDomain: "xmas-rose.firebaseapp.com",
-    projectId: "xmas-rose",
-    storageBucket: "xmas-rose.firebasestorage.app",
-    messagingSenderId: "1087656471298",
-    appId: "1:1087656471298:web:9cc720ec67de2ba01bb01b",
-    measurementId: "G-J6X39P4NBZ"
-  };
+/* -------------------------------------------------
+   1) FIREBASE IMPORTS (CLEAN + CORRECT)
+--------------------------------------------------*/
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  deleteDoc
+} from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+/* -------------------------------------------------
+   2) FIREBASE CONFIG
+--------------------------------------------------*/
+const firebaseConfig = {
+  apiKey: "AIzaSyDDmoePihLpjM5pmkZuIQAAajw8mtM9UU4",
+  authDomain: "xmas-rose.firebaseapp.com",
+  projectId: "xmas-rose",
+  storageBucket: "xmas-rose.firebasestorage.app",
+  messagingSenderId: "1087656471298",
+  appId: "1:1087656471298:web:9cc720ec67de2ba01bb01b",
+  measurementId: "G-J6X39P4NBZ"
+};
 
-  // single document for Rose
-  const userDocRef = doc(db, "xmasUsers", "rose");
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const userDocRef = doc(db, "xmasUsers", "rose");
 
-  // === BASIC CONFIG ===
-  const LOGIN_PASSWORD = "mychristmascode"; // <<< change for Rose
-  const ADMIN_PASSWORD = "adminrose";       // <<< change for you
+/* -------------------------------------------------
+   3) CONSTANTS & SELECTORS
+--------------------------------------------------*/
+const LOGIN_PASSWORD = "mychristmascode";
+const ADMIN_PASSWORD = "adminrose";
 
-  const LOGIN_KEY = "xmas_login_ok_v1";
-  const LOVE_POINTS_KEY = "love_points_v1";
-  const COMPLETED_DAYS_KEY = "completed_days_v1";
-  const OPENED_PER_DATE_KEY = "opened_per_date_v1";
-  const ACTIVITY_LOGS_KEY = "activity_logs_v1";
-  const POINTS_PER_TASK = 10;
+const LOGIN_KEY = "xmas_login_ok_v1";
+const LOVE_POINTS_KEY = "love_points_v1";
+const COMPLETED_DAYS_KEY = "completed_days_v1";
+const OPENED_PER_DATE_KEY = "opened_per_date_v1";
+const ACTIVITY_LOGS_KEY = "activity_logs_v1";
+const POINTS_PER_TASK = 10;
 
-  // === DAYS DATA ===
-  const daysData = [
-    {
-      day: 1,
-      emoji: "✨",
-      label: "Soft launch",
-      title: "Warm-up wish",
-      type: "loveNote",
-      wish: [
-        "Day 1 of Christmas and I’m starting simple: I’m just really, really glad you exist.",
-        "If life was a playlist, you’d be that one song I never skip. 🔁❤️"
-      ],
-      activity: {
-        heading: "Tiny task",
-        description:
-          "Send me a selfie right now, no overthinking, no filters. I’ll reply with the first three words that pop into my head.",
-        note: "Yes, even if you “look messy”. Especially then."
-      }
-    },
-    // ... your full daysData array as you already have ...
-    // (I’m not changing anything inside it)
-    {
-      day: 30,
-      emoji: "🎆",
-      label: "Almost New Year",
-      title: "Soft reset",
-      type: "mood",
-      wish: [
-        "30 days later and I’m still choosing you. Every day.",
-        "Let’s carry this energy into the new year, yeah?"
-      ],
-      activity: {
-        heading: "New year intention",
-        description:
-          "Complete this and send it: ‘Next year, I want us to…’",
-        note: "Keep this message somewhere. We’ll revisit it together."
-      }
-    }
-  ];
+/* LOGIN ELEMENTS */
+const loginScreen = document.getElementById("login-screen");
+const loginInput = document.getElementById("login-password");
+const loginBtn = document.getElementById("login-button");
+const loginError = document.getElementById("login-error");
 
-  const compliments = [
-    "You’re way prettier than your front camera thinks.",
-    "Your personality is my favourite thing you wear.",
-    "You make ordinary days feel like main-character scenes.",
-    "I feel weirdly safer just knowing you exist.",
-    "Your brain + your heart = unfair combo.",
-    "You’re not ‘a lot’. You’re exactly enough.",
-    "I genuinely like who I am when I’m with you.",
-    "You’re my favourite notification on my phone.",
-    "If you vanished from my life, it would be illegal.",
-    "I’m low-key obsessed with you and high-key not sorry."
-  ];
+/* MAIN APP */
+const mainApp = document.getElementById("main-app");
 
-  // === GLOBAL STATE ===
-  const loginScreen = document.getElementById("login-screen");
-  const mainApp = document.getElementById("main-app");
-  const loginInput = document.getElementById("login-password");
-  const loginBtn = document.getElementById("login-button");
-  const loginError = document.getElementById("login-error");
+/* ADMIN */
+const adminScreen = document.getElementById("admin-screen");
+const adminOpenBtn = document.getElementById("admin-open");
+const adminCloseBtn = document.getElementById("admin-close");
+const adminLoginSection = document.getElementById("admin-login-section");
+const adminInput = document.getElementById("admin-password");
+const adminLoginBtn = document.getElementById("admin-login-button");
+const adminError = document.getElementById("admin-error");
+const adminContent = document.getElementById("admin-content");
+const adminSummary = document.getElementById("admin-summary");
+const adminTableBody = document.getElementById("admin-table-body");
+const adminResetBtn = document.getElementById("admin-reset-button");
 
-  const adminScreen = document.getElementById("admin-screen");
-  const adminOpenBtn = document.getElementById("admin-open");
-  const adminCloseBtn = document.getElementById("admin-close");
-  const adminLoginSection = document.getElementById("admin-login-section");
-  const adminInput = document.getElementById("admin-password");
-  const adminLoginBtn = document.getElementById("admin-login-button");
-  const adminError = document.getElementById("admin-error");
-  const adminContent = document.getElementById("admin-content");
-  const adminSummary = document.getElementById("admin-summary");
-  const adminTableBody = document.getElementById("admin-table-body");
-  const adminResetBtn = document.getElementById("admin-reset-button");
+/* NAME */
+const nameInput = document.getElementById("gf-name");
+const saveNameBtn = document.getElementById("save-name");
+const nameDisplay = document.getElementById("gf-name-display");
+const nameInline = document.getElementById("gf-name-inline");
+const nameFooter = document.getElementById("gf-name-footer");
 
-  const nameInput = document.getElementById("gf-name");
-  const saveNameBtn = document.getElementById("save-name");
-  const nameDisplay = document.getElementById("gf-name-display");
-  const nameInline = document.getElementById("gf-name-inline");
-  const nameFooter = document.getElementById("gf-name-footer");
+/* STATS */
+const lovePointsSpan = document.getElementById("love-points");
+const progressText = document.getElementById("progress-text");
+const progressFill = document.getElementById("progress-fill");
 
-  const lovePointsSpan = document.getElementById("love-points");
-  const progressText = document.getElementById("progress-text");
-  const progressFill = document.getElementById("progress-fill");
+/* CALENDAR, MODAL */
+const grid = document.getElementById("calendar-grid");
+const modalBackdrop = document.getElementById("modal-backdrop");
+const modalClose = document.getElementById("modal-close");
+const modalEmoji = document.getElementById("modal-emoji");
+const modalTypeLabel = document.getElementById("modal-type-label");
+const modalDayNum = document.getElementById("modal-day-num");
+const modalTitleText = document.getElementById("modal-title-text");
+const modalWish = document.getElementById("modal-wish");
+const modalActivity = document.getElementById("modal-activity");
+const doneButton = document.getElementById("done-button");
+const doneButtonLabel = document.getElementById("done-button-label");
 
-  const modalBackdrop = document.getElementById("modal-backdrop");
-  const modalClose = document.getElementById("modal-close");
-  const modalEmoji = document.getElementById("modal-emoji");
-  const modalTypeLabel = document.getElementById("modal-type-label");
-  const modalDayNum = document.getElementById("modal-day-num");
-  const modalTitleText = document.getElementById("modal-title-text");
-  const modalWish = document.getElementById("modal-wish");
-  const modalActivity = document.getElementById("modal-activity");
-  const doneButton = document.getElementById("done-button");
-  const doneButtonLabel = document.getElementById("done-button-label");
+let lovePoints = Number(localStorage.getItem(LOVE_POINTS_KEY) || "0");
+let completedDays = [];
+let openedPerDate = {};
+let activityLogs = {};
+let currentDayObj = null;
+const dayCardMap = {};
 
-  const grid = document.getElementById("calendar-grid");
-  const dayCardMap = {};
+/* -------------------------------------------------
+   4) LOGIN LOGIC
+--------------------------------------------------*/
+function showApp() {
+  loginScreen.style.display = "none";
+  mainApp.style.display = "block";
+}
 
-  let lovePoints = Number(localStorage.getItem(LOVE_POINTS_KEY) || "0");
-  let completedDays = [];
-  let openedPerDate = {};
-  let activityLogs = {};
-  let currentDayObj = null;
-
-  // === LOGIN LOGIC ===
-  function showApp() {
-    loginScreen.style.display = "none";
-    mainApp.style.display = "block";
-  }
-
-  function handleLogin() {
-    const val = loginInput.value.trim();
-    if (val === LOGIN_PASSWORD) {
-      localStorage.setItem(LOGIN_KEY, "true");
-      showApp();
-    } else {
-      loginError.textContent = "Wrong code. Try again or spam my chat. 😤";
-    }
-  }
-
-  if (localStorage.getItem(LOGIN_KEY) === "true") {
+function handleLogin() {
+  const val = loginInput.value.trim();
+  if (val === LOGIN_PASSWORD) {
+    localStorage.setItem(LOGIN_KEY, "true");
     showApp();
-  }
-
-  loginBtn.addEventListener("click", handleLogin);
-  loginInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleLogin();
-    }
-  });
-
-  // === ADMIN LOGIC ===
-  adminOpenBtn.addEventListener("click", () => {
-    adminScreen.style.display = "flex";
-    adminError.textContent = "";
-    adminInput.value = "";
-    adminContent.style.display = "none";
-    adminLoginSection.style.display = "block";
-  });
-
-  adminCloseBtn.addEventListener("click", () => {
-    adminScreen.style.display = "none";
-  });
-
-  function renderAdminView() {
-    const totalCompleted = completedDays.length;
-    const percent = Math.round((totalCompleted / 30) * 100);
-    adminSummary.innerHTML = `
-      <div><strong>Love points:</strong> ${lovePoints}</div>
-      <div><strong>Days completed:</strong> ${totalCompleted} / 30 (${percent}%)</div>
-    `;
-
-    adminTableBody.innerHTML = "";
-    daysData.forEach((d) => {
-      const log = activityLogs[d.day] || {};
-      const tr = document.createElement("tr");
-      const completed = completedDays.includes(d.day);
-      const mood = log.mood != null ? log.mood : "-";
-      const selections = log.selections && log.selections.length
-        ? log.selections.join(" | ")
-        : "-";
-      const answer = log.answer ? log.answer.replace(/\n/g, " / ") : "-";
-
-      tr.innerHTML = `
-        <td>${d.day}</td>
-        <td>${d.title}</td>
-        <td>${d.type}</td>
-        <td>${completed ? "Yes" : "No"}</td>
-        <td>${mood}</td>
-        <td>${selections}</td>
-        <td>${answer}</td>
-      `;
-      adminTableBody.appendChild(tr);
-    });
-  }
-
-  function handleAdminLogin() {
-    const val = adminInput.value.trim();
-    if (val === ADMIN_PASSWORD) {
-      adminError.textContent = "";
-      adminLoginSection.style.display = "none";
-      adminContent.style.display = "block";
-      renderAdminView();
-    } else {
-      adminError.textContent = "Wrong admin code.";
-    }
-  }
-
-  adminLoginBtn.addEventListener("click", handleAdminLogin);
-  adminInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAdminLogin();
-    }
-  });
-
-  // === NAME HANDLING ===
-  function setNameEverywhere(name) {
-    const clean = name && name.trim() ? name.trim() : "Rose";
-    nameDisplay.textContent = clean;
-    nameFooter.textContent = clean;
-    nameInline.textContent = clean;
-  }
-
-  const storedName = localStorage.getItem("gfName");
-  if (storedName) {
-    nameInput.value = storedName;
-    setNameEverywhere(storedName);
   } else {
-    const defaultName = "Rose";
-    nameInput.value = defaultName;
-    setNameEverywhere(defaultName);
-    localStorage.setItem("gfName", defaultName);
+    loginError.textContent = "Wrong code. Try again 😤";
   }
+}
 
-  saveNameBtn.addEventListener("click", () => {
-    const val = nameInput.value.trim();
-    const nameToSave = val || "Rose";
-    localStorage.setItem("gfName", nameToSave);
-    setNameEverywhere(nameToSave);
+if (localStorage.getItem(LOGIN_KEY) === "true") {
+  showApp();
+}
+
+loginBtn.addEventListener("click", handleLogin);
+loginInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") handleLogin();
+});
+
+/* -------------------------------------------------
+   5) ADMIN LOGIC
+--------------------------------------------------*/
+adminOpenBtn.addEventListener("click", () => {
+  adminScreen.style.display = "flex";
+  adminError.textContent = "";
+  adminInput.value = "";
+  adminContent.style.display = "none";
+  adminLoginSection.style.display = "block";
+});
+
+adminCloseBtn.addEventListener("click", () => {
+  adminScreen.style.display = "none";
+});
+
+function renderAdminView() {
+  const totalCompleted = completedDays.length;
+  const percent = Math.round((totalCompleted / 30) * 100);
+
+  adminSummary.innerHTML = `
+    <div><strong>Love points:</strong> ${lovePoints}</div>
+    <div><strong>Days completed:</strong> ${totalCompleted} / 30 (${percent}%)</div>
+  `;
+
+  adminTableBody.innerHTML = "";
+  daysData.forEach((d) => {
+    const log = activityLogs[d.day] || {};
+    const tr = document.createElement("tr");
+    const mood = log.mood ?? "-";
+    const selections = log.selections?.join(" | ") || "-";
+    const answer = log.answer?.replace(/\n/g, " / ") || "-";
+
+    tr.innerHTML = `
+      <td>${d.day}</td>
+      <td>${d.title}</td>
+      <td>${d.type}</td>
+      <td>${completedDays.includes(d.day) ? "Yes" : "No"}</td>
+      <td>${mood}</td>
+      <td>${selections}</td>
+      <td>${answer}</td>
+    `;
+    adminTableBody.appendChild(tr);
   });
+}
 
-  nameInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      saveNameBtn.click();
-    }
-  });
+function handleAdminLogin() {
+  if (adminInput.value.trim() === ADMIN_PASSWORD) {
+    adminLoginSection.style.display = "none";
+    adminContent.style.display = "block";
+    renderAdminView();
+  } else {
+    adminError.textContent = "Wrong admin code.";
+  }
+}
 
-  // === LOAD STATE (local) ===
+adminLoginBtn.addEventListener("click", handleAdminLogin);
+adminInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") handleAdminLogin();
+});
+
+/* -------------------------------------------------
+   6) NAME SAVING
+--------------------------------------------------*/
+function setNameEverywhere(name) {
+  const clean = name.trim() || "Rose";
+  nameDisplay.textContent = clean;
+  nameFooter.textContent = clean;
+  nameInline.textContent = clean;
+}
+
+const storedName = localStorage.getItem("gfName") || "Rose";
+setNameEverywhere(storedName);
+nameInput.value = storedName;
+
+saveNameBtn.addEventListener("click", () => {
+  const n = nameInput.value.trim() || "Rose";
+  localStorage.setItem("gfName", n);
+  setNameEverywhere(n);
+});
+
+/* -------------------------------------------------
+   7) LOAD LOCAL STATE
+--------------------------------------------------*/
+try { completedDays = JSON.parse(localStorage.getItem(COMPLETED_DAYS_KEY) || "[]"); } catch{}
+try { openedPerDate = JSON.parse(localStorage.getItem(OPENED_PER_DATE_KEY) || "{}"); } catch{}
+try { activityLogs = JSON.parse(localStorage.getItem(ACTIVITY_LOGS_KEY) || "{}"); } catch{}
+
+function updateLovePointsDisplay() { lovePointsSpan.textContent = lovePoints; }
+function updateProgress() {
+  const done = completedDays.length;
+  progressText.textContent = `${done} / 30 days completed`;
+  progressFill.style.width = `${(done/30)*100}%`;
+}
+updateLovePointsDisplay();
+updateProgress();
+
+/* -------------------------------------------------
+   8) FIRESTORE – LOAD + SAVE
+--------------------------------------------------*/
+async function loadFromCloud() {
   try {
-    completedDays = JSON.parse(localStorage.getItem(COMPLETED_DAYS_KEY) || "[]");
-  } catch {
-    completedDays = [];
-  }
-  try {
-    openedPerDate = JSON.parse(localStorage.getItem(OPENED_PER_DATE_KEY) || "{}");
-  } catch {
-    openedPerDate = {};
-  }
-  try {
-    activityLogs = JSON.parse(localStorage.getItem(ACTIVITY_LOGS_KEY) || "{}");
-  } catch {
-    activityLogs = {};
-  }
+    const snap = await getDoc(userDocRef);
+    if (!snap.exists()) return;
 
-  function updateLovePointsDisplay() {
-    lovePointsSpan.textContent = lovePoints;
-  }
+    const data = snap.data();
 
-  function updateProgress() {
-    const done = completedDays.length;
-    const total = 30;
-    const percent = (done / total) * 100;
-    progressText.textContent = `${done} / ${total} days completed`;
-    progressFill.style.width = `${percent}%`;
-  }
-
-  // === CLOUD LOAD ===
-  async function loadFromCloud() {
-    try {
-      const snap = await getDoc(userDocRef);
-      if (snap.exists()) {
-        const data = snap.data();
-
-        if (typeof data.lovePoints === "number") {
-          lovePoints = data.lovePoints;
-        }
-        if (Array.isArray(data.completedDays)) {
-          completedDays = data.completedDays;
-        }
-        if (data.openedPerDate && typeof data.openedPerDate === "object") {
-          openedPerDate = data.openedPerDate;
-        }
-        if (data.activityLogs && typeof data.activityLogs === "object") {
-          activityLogs = data.activityLogs;
-        }
-        if (typeof data.gfName === "string") {
-          localStorage.setItem("gfName", data.gfName);
-          setNameEverywhere(data.gfName);
-          nameInput.value = data.gfName;
-        }
-
-        updateLovePointsDisplay();
-        updateProgress();
-        completedDays.forEach(updateDayCardCompleted);
-      }
-    } catch (err) {
-      console.error("Error loading from Firestore:", err);
+    if (typeof data.lovePoints === "number") lovePoints = data.lovePoints;
+    if (Array.isArray(data.completedDays)) completedDays = data.completedDays;
+    if (data.openedPerDate) openedPerDate = data.openedPerDate;
+    if (data.activityLogs) activityLogs = data.activityLogs;
+    if (data.gfName) {
+      localStorage.setItem("gfName", data.gfName);
+      setNameEverywhere(data.gfName);
+      nameInput.value = data.gfName;
     }
+
+    updateLovePointsDisplay();
+    updateProgress();
+    completedDays.forEach(updateDayCardCompleted);
+
+  } catch (e) {
+    console.error("Cloud load failed:", e);
   }
+}
+loadFromCloud();
 
-  // === CLOUD SAVE ===
-  async function saveLoveState() {
-    // local backup
-    localStorage.setItem(LOVE_POINTS_KEY, String(lovePoints));
-    localStorage.setItem(COMPLETED_DAYS_KEY, JSON.stringify(completedDays));
-    localStorage.setItem(OPENED_PER_DATE_KEY, JSON.stringify(openedPerDate));
-    localStorage.setItem(ACTIVITY_LOGS_KEY, JSON.stringify(activityLogs));
+async function saveLoveState() {
+  localStorage.setItem(LOVE_POINTS_KEY, lovePoints);
+  localStorage.setItem(COMPLETED_DAYS_KEY, JSON.stringify(completedDays));
+  localStorage.setItem(OPENED_PER_DATE_KEY, JSON.stringify(openedPerDate));
+  localStorage.setItem(ACTIVITY_LOGS_KEY, JSON.stringify(activityLogs));
 
-    const gfNameToSave = localStorage.getItem("gfName") || "Rose";
-
-    try {
-      await setDoc(
-        userDocRef,
-        {
-          lovePoints,
-          completedDays,
-          openedPerDate,
-          activityLogs,
-          gfName: gfNameToSave,
-          updatedAt: new Date().toISOString(),
-        },
-        { merge: true }
-      );
-    } catch (err) {
-      console.error("Error saving to Firestore:", err);
-    }
+  try {
+    await setDoc(userDocRef, {
+      lovePoints,
+      completedDays,
+      openedPerDate,
+      activityLogs,
+      gfName: localStorage.getItem("gfName") || "Rose",
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+  } catch (e) {
+    console.error("Cloud save failed:", e);
   }
+}
 
+/* -------------------------------------------------
+   9) ADMIN RESET ALL DATA
+--------------------------------------------------*/
+function resetDayCard(day){
+  const card = dayCardMap[day];
+  if (!card) return;
+  card.classList.remove("completed");
+  const d = daysData.find(x => x.day === day);
+  card.querySelector(".day-tag").textContent = d.label;
+  card.querySelector(".day-status span:last-child").textContent = "Ready to open";
+  card.querySelector(".day-cta").textContent = "Open ✨";
+  card.querySelector(".day-emoji").textContent = d.emoji;
+}
+
+adminResetBtn.addEventListener("click", async () => {
+  if (!confirm("Reset ALL data? This cannot be undone.")) return;
+
+  lovePoints = 0;
+  completedDays = [];
+  openedPerDate = {};
+  activityLogs = {};
+
+  localStorage.clear();
+
+  try { await deleteDoc(userDocRef); } catch(e){ console.warn(e); }
+
+  daysData.forEach(d => resetDayCard(d.day));
   updateLovePointsDisplay();
   updateProgress();
 
-  // === RESET ALL DATA (admin) ===
-  function resetDayCard(dayNumber) {
-    const card = dayCardMap[dayNumber];
-    if (!card) return;
+  alert("Reset complete. Reloading…");
+  location.reload();
+});
 
-    card.classList.remove("completed");
+/* -------------------------------------------------
+   10) CALENDAR + MODAL
+--------------------------------------------------*/
+function isToday(day){
+  const now = new Date();
+  return now.getMonth()===11 && now.getDate()===day;
+}
+function isLocked(day){
+  const now = new Date();
+  if (now.getMonth()!==11) return false;
+  return day > now.getDate();
+}
+function getTodayKey(){
+  return new Date().toISOString().slice(0,10);
+}
 
-    const dayData = daysData.find((d) => d.day === dayNumber);
+daysData.forEach((d)=>{
+  const card=document.createElement("button");
+  card.className="day";
+  card.dataset.day=d.day;
 
-    const tag = card.querySelector(".day-tag");
-    if (tag) {
-      tag.textContent = dayData ? dayData.label : "Ready";
-    }
+  if(isLocked(d.day)) card.classList.add("locked");
+  if(isToday(d.day)) card.classList.add("today");
+  if(completedDays.includes(d.day)) card.classList.add("completed");
 
-    const status = card.querySelector(".day-status span:last-child");
-    if (status) {
-      status.textContent = "Ready to open";
-    }
+  card.innerHTML=`
+    <div class="day-main">
+      <div>
+        <div class="day-number">${d.day}</div>
+        <div class="day-tag">${completedDays.includes(d.day)?"Completed":d.label}</div>
+      </div>
+      <div class="day-emoji">${completedDays.includes(d.day)?"❤️": isLocked(d.day)?"🔒":d.emoji}</div>
+    </div>
+    <div class="day-footer">
+      <div class="day-status"><div class="dot"></div>
+        <span>${completedDays.includes(d.day)?"Done · reopen": isLocked(d.day)?"Locked":"Ready to open"}</span>
+      </div>
+      <div class="day-cta">${completedDays.includes(d.day)?"View again":"Open ✨"}</div>
+    </div>
+  `;
 
-    const cta = card.querySelector(".day-cta");
-    if (cta) {
-      cta.textContent = "Open ✨";
-    }
+  if(!isLocked(d.day)){
+    card.addEventListener("click", ()=>{
+      const todayKey=getTodayKey();
+      const opened=openedPerDate[todayKey];
 
-    const emoji = card.querySelector(".day-emoji");
-    if (emoji) {
-      if (isLocked(dayNumber)) {
-        emoji.textContent = "🔒";
-      } else {
-        emoji.textContent = dayData ? dayData.emoji : "🎄";
-      }
-    }
-  }
-
-  async function resetAllData() {
-    const sure = confirm(
-      "This will erase all love points, completed days and answers (local + cloud) and reload the page.\n\nOnly do this for testing. Continue?"
-    );
-    if (!sure) return;
-
-    try {
-      // 1) Clear in-memory state
-      lovePoints = 0;
-      completedDays = [];
-      openedPerDate = {};
-      activityLogs = {};
-
-      // 2) Clear localStorage
-      localStorage.removeItem(LOVE_POINTS_KEY);
-      localStorage.removeItem(COMPLETED_DAYS_KEY);
-      localStorage.removeItem(OPENED_PER_DATE_KEY);
-      localStorage.removeItem(ACTIVITY_LOGS_KEY);
-      localStorage.removeItem("gfName");
-      localStorage.removeItem(LOGIN_KEY); // so login screen shows again
-
-      // 3) Delete Firestore doc
-      try {
-        await deleteDoc(userDocRef);
-        console.log("Firestore doc deleted ✅");
-      } catch (err) {
-        console.error("Error deleting Firestore doc:", err);
-        // Even if cloud delete fails, we still reset local
+      if(opened && opened!==d.day){
+        alert(`You already opened Day ${opened} today. Come back tomorrow 💌`);
+        return;
       }
 
-      // 4) Reset UI
-      setNameEverywhere("Rose");
-      nameInput.value = "Rose";
-      updateLovePointsDisplay();
-      updateProgress();
-      daysData.forEach((d) => resetDayCard(d.day));
+      if(!opened){
+        openedPerDate[todayKey]=d.day;
+        saveLoveState();
+      }
 
-      alert("All data reset. The page will reload now.");
-      window.location.reload();
-    } catch (err) {
-      console.error("Failed to reset data:", err);
-      alert("Reset failed. Check console for details.");
-    }
+      openModal(d);
+    });
   }
 
-  adminResetBtn.addEventListener("click", resetAllData);
+  grid.appendChild(card);
+  dayCardMap[d.day]=card;
+});
 
-  function isDayCompleted(dayNumber) {
-    return completedDays.includes(dayNumber);
-  }
+function updateDayCardCompleted(day){
+  const card=dayCardMap[day];
+  if(!card)return;
+  card.classList.add("completed");
+  card.querySelector(".day-tag").textContent="Completed";
+  card.querySelector(".day-status span:last-child").textContent="Done · reopen";
+  card.querySelector(".day-cta").textContent="View again";
+  card.querySelector(".day-emoji").textContent="❤️";
+}
 
-  function ensureDayLog(dayNumber) {
-    if (!activityLogs[dayNumber]) {
-      activityLogs[dayNumber] = {};
-    }
-    return activityLogs[dayNumber];
-  }
+/* -------------------------------------------------
+   11) MODAL + ACTIVITY RENDERING
+--------------------------------------------------*/
+function openModal(d){
+  currentDayObj=d;
 
-  // === CALENDAR RENDER ===
-  function isToday(dayNumber) {
-    const now = new Date();
-    const month = now.getMonth();
-    if (month !== 11) return false;
-    return now.getDate() === dayNumber;
-  }
+  modalEmoji.textContent=d.emoji;
+  modalDayNum.textContent=`Day ${d.day}`;
+  modalTitleText.textContent=`· ${d.title}`;
 
-  function isLocked(dayNumber) {
-    const now = new Date();
-    const month = now.getMonth();
-    if (month !== 11) return false; // not December => all open
-    return dayNumber > now.getDate();
-  }
+  const typeLabels={
+    loveNote:"Soft love note",
+    mood:"Mood check",
+    compliment:"Compliment drop",
+    thisOrThat:"Mini game",
+    simpleTask:"Tiny mission",
+    quiz:"Story quiz"
+  };
+  modalTypeLabel.textContent=typeLabels[d.type] || "Love drop";
 
-  function getTodayKey() {
-    const now = new Date();
-    return now.toISOString().slice(0, 10);
-  }
-
-  daysData.forEach((d) => {
-    const card = document.createElement("button");
-    card.className = "day";
-    card.dataset.day = String(d.day);
-
-    const locked = isLocked(d.day);
-    if (locked) card.classList.add("locked");
-    if (!locked && isToday(d.day)) card.classList.add("today");
-    if (isDayCompleted(d.day)) card.classList.add("completed");
-
-    card.innerHTML = `
-      <div class="day-main">
-        <div>
-          <div class="day-number">${d.day}</div>
-          <div class="day-tag">${isDayCompleted(d.day) ? "Completed" : d.label}</div>
-        </div>
-        <div class="day-emoji">${locked ? "🔒" : isDayCompleted(d.day) ? "❤️" : d.emoji}</div>
-      </div>
-      <div class="day-footer">
-        <div class="day-status">
-          <div class="dot"></div>
-          <span>${locked ? "Locked (future)" : isDayCompleted(d.day) ? "Done · reopen" : "Ready to open"}</span>
-        </div>
-        <div class="day-cta">
-          ${locked ? "Patience, elf ✨" : isDayCompleted(d.day) ? "View again" : "Open ✨"}
-        </div>
-      </div>
-    `;
-
-    if (!locked) {
-      card.addEventListener("click", () => {
-        const todayKey = getTodayKey();
-        const previouslyOpened = openedPerDate[todayKey];
-
-        if (previouslyOpened && previouslyOpened !== d.day) {
-          alert(
-            `You already opened Day ${previouslyOpened} today.\n\nOne card per day only. Come back tomorrow for a new one. 💌`
-          );
-          return;
-        }
-
-        if (!previouslyOpened) {
-          openedPerDate[todayKey] = d.day;
-          saveLoveState();
-        }
-
-        openModal(d);
-      });
-    }
-
-    grid.appendChild(card);
-    dayCardMap[d.day] = card;
+  modalWish.innerHTML="";
+  d.wish.forEach(w=>{
+    const p=document.createElement("p");
+    p.innerHTML=w;
+    modalWish.appendChild(p);
   });
 
-  function updateDayCardCompleted(dayNumber) {
-    const card = dayCardMap[dayNumber];
-    if (!card) return;
-    card.classList.add("completed");
-    const tag = card.querySelector(".day-tag");
-    if (tag) tag.textContent = "Completed";
-    const status = card.querySelector(".day-status span:last-child");
-    if (status) status.textContent = "Done · reopen";
-    const cta = card.querySelector(".day-cta");
-    if (cta) cta.textContent = "View again";
-    const emoji = card.querySelector(".day-emoji");
-    if (emoji) emoji.textContent = "❤️";
+  renderActivity(d);
+
+  const completed=completedDays.includes(d.day);
+  updateDoneButtonState(completed);
+
+  modalBackdrop.classList.add("active");
+}
+
+function closeModal(){
+  modalBackdrop.classList.remove("active");
+  currentDayObj=null;
+}
+
+modalClose.addEventListener("click", closeModal);
+modalBackdrop.addEventListener("click", e=>{
+  if(e.target===modalBackdrop) closeModal();
+});
+document.addEventListener("keydown", e=>{
+  if(e.key==="Escape") closeModal();
+});
+
+/* -------------------------------------------------
+   12) DONE BUTTON
+--------------------------------------------------*/
+function updateDoneButtonState(completed){
+  if(completed){
+    doneButton.disabled=true;
+    doneButton.classList.add("disabled");
+    doneButtonLabel.textContent="Already marked as done ❤️";
+  } else {
+    doneButton.disabled=false;
+    doneButton.classList.remove("disabled");
+    doneButtonLabel.textContent=`Mark this task as done (+${POINTS_PER_TASK} ❤️)`;
   }
+}
 
-  // === MODAL + ACTIVITY ===
-  function openModal(dayObj) {
-    currentDayObj = dayObj;
-    modalEmoji.textContent = dayObj.emoji;
-    modalDayNum.textContent = `Day ${dayObj.day}`;
-    modalTitleText.textContent = `· ${dayObj.title}`;
-    modalTypeLabel.textContent = {
-      loveNote: "Soft love note",
-      mood: "Mood check",
-      compliment: "Compliment drop",
-      thisOrThat: "Mini game",
-      simpleTask: "Tiny mission",
-      quiz: "Story quiz"
-    }[dayObj.type] || "Love drop";
+doneButton.addEventListener("click", ()=>{
+  if(!currentDayObj) return;
 
-    modalWish.innerHTML = "";
-    (dayObj.wish || []).forEach((line) => {
-      const p = document.createElement("p");
-      p.innerHTML = line;
-      modalWish.appendChild(p);
+  const day=currentDayObj.day;
+  if(completedDays.includes(day)) return;
+
+  completedDays.push(day);
+  lovePoints+=POINTS_PER_TASK;
+
+  updateLovePointsDisplay();
+  updateDayCardCompleted(day);
+  updateProgress();
+  updateDoneButtonState(true);
+  saveLoveState();
+
+  alert(`Task for Day ${day} marked as done!\n+${POINTS_PER_TASK} love points ❤️`);
+});
+
+/* -------------------------------------------------
+   13) ACTIVITY TYPES (HIGHLIGHTS, SLIDERS, ANSWERS)
+--------------------------------------------------*/
+function ensureDayLog(day){
+  if(!activityLogs[day]) activityLogs[day]={};
+  return activityLogs[day];
+}
+
+function renderActivity(d){
+  const act=d.activity;
+  const log=ensureDayLog(d.day);
+
+  modalActivity.innerHTML=`
+    <div class="activity-header">
+      <span class="label">
+        <span class="icon">${
+          {
+            thisOrThat:"🎮",
+            mood:"📊",
+            quiz:"🧠",
+            compliment:"💖"
+          }[d.type] || "📝"
+        }</span>
+        <span>${act.heading}</span>
+      </span>
+      <span class="activity-badge">${d.label}</span>
+    </div>
+    <div class="activity-body">${act.description}</div>
+  `;
+
+  const body=modalActivity.querySelector(".activity-body");
+
+  /* --- thisOrThat --- */
+  if(d.type==="thisOrThat" && act.options){
+    const wrap=document.createElement("div");
+    wrap.className="activity-options";
+
+    const selected=new Set(log.selections || []);
+
+    act.options.forEach(opt=>{
+      const row=document.createElement("div");
+      row.className="option-row";
+      if(selected.has(opt)) row.classList.add("selected");
+      row.innerHTML=`
+        <span class="text">${opt}</span>
+        <button class="option-btn">Pick 🫰</button>
+      `;
+
+      row.addEventListener("click", ()=>{
+        const l=ensureDayLog(d.day);
+        l.selections=l.selections||[];
+
+        if(row.classList.contains("selected")){
+          row.classList.remove("selected");
+          l.selections=l.selections.filter(x=>x!==opt);
+        } else {
+          row.classList.add("selected");
+          if(!l.selections.includes(opt)) l.selections.push(opt);
+        }
+
+        activityLogs[d.day]=l;
+        saveLoveState();
+      });
+
+      wrap.appendChild(row);
     });
 
-    renderActivity(dayObj);
-
-    const completed = isDayCompleted(dayObj.day);
-    updateDoneButtonState(completed);
-
-    modalBackdrop.classList.add("active");
+    body.appendChild(wrap);
   }
 
-  function closeModal() {
-    modalBackdrop.classList.remove("active");
-    currentDayObj = null;
-  }
+  /* --- compliment --- */
+  if(d.type==="compliment"){
+    const out=document.createElement("div");
+    out.className="compliment-output";
+    out.textContent=log.lastCompliment || "Tap for a compliment";
 
-  function updateDoneButtonState(completed) {
-    if (completed) {
-      doneButton.classList.add("disabled");
-      doneButton.disabled = true;
-      doneButtonLabel.textContent = "Already marked as done ❤️";
-    } else {
-      doneButton.classList.remove("disabled");
-      doneButton.disabled = false;
-      doneButtonLabel.textContent = `Mark this task as done (+${POINTS_PER_TASK} ❤️)`;
-    }
-  }
+    const btn=document.createElement("button");
+    btn.className="primary-btn";
+    btn.innerHTML=`<span class="icon">💖</span> Tap`;
 
-  doneButton.addEventListener("click", () => {
-    if (!currentDayObj) return;
-    const dayNumber = currentDayObj.day;
-    if (isDayCompleted(dayNumber)) return;
-
-    completedDays.push(dayNumber);
-    lovePoints += POINTS_PER_TASK;
-    updateLovePointsDisplay();
-    updateDayCardCompleted(dayNumber);
-    updateDoneButtonState(true);
-    updateProgress();
-    saveLoveState();
-
-    alert(
-      `Task for Day ${dayNumber} marked as done!\n\n+${POINTS_PER_TASK} love points unlocked. You overachiever. ❤️`
-    );
-  });
-
-  modalClose.addEventListener("click", closeModal);
-  modalBackdrop.addEventListener("click", (e) => {
-    if (e.target === modalBackdrop) closeModal();
-  });
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeModal();
-  });
-
-  function renderActivity(dayObj) {
-    const act = dayObj.activity || {};
-    const dayLog = ensureDayLog(dayObj.day);
-
-    modalActivity.innerHTML = `
-      <div class="activity-header">
-        <span class="label">
-          <span class="icon">${
-            dayObj.type === "thisOrThat"
-              ? "🎮"
-              : dayObj.type === "mood"
-              ? "📊"
-              : dayObj.type === "quiz"
-              ? "🧠"
-              : dayObj.type === "compliment"
-              ? "💖"
-              : "📝"
-          }</span>
-          <span>${act.heading || "Activity"}</span>
-        </span>
-        <span class="activity-badge">${dayObj.label}</span>
-      </div>
-      <div class="activity-body">
-        <div>${act.description || ""}</div>
-      </div>
-    `;
-
-    const body = modalActivity.querySelector(".activity-body");
-
-    // thisOrThat options with highlight
-    if (dayObj.type === "thisOrThat" && act.options?.length) {
-      const wrap = document.createElement("div");
-      wrap.className = "activity-options";
-      const selectedSet = new Set(dayLog.selections || []);
-
-      act.options.forEach((opt) => {
-        const row = document.createElement("div");
-        row.className = "option-row";
-        if (selectedSet.has(opt)) row.classList.add("selected");
-        row.innerHTML = `
-          <span class="text">${opt}</span>
-          <button class="option-btn" type="button">Pick 🫰</button>
-        `;
-        const btn = row.querySelector("button");
-        const toggleSelection = () => {
-          const log = ensureDayLog(dayObj.day);
-          log.selections = log.selections || [];
-          if (row.classList.contains("selected")) {
-            row.classList.remove("selected");
-            log.selections = log.selections.filter((x) => x !== opt);
-          } else {
-            row.classList.add("selected");
-            if (!log.selections.includes(opt)) log.selections.push(opt);
-          }
-          activityLogs[dayObj.day] = log;
-          saveLoveState();
-        };
-        row.addEventListener("click", (e) => {
-          if (e.target.tagName.toLowerCase() === "button") {
-            toggleSelection();
-          } else {
-            toggleSelection();
-          }
-        });
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          toggleSelection();
-        });
-        wrap.appendChild(row);
-      });
-      body.appendChild(wrap);
-    }
-
-    // Compliment generator
-    if (dayObj.type === "compliment") {
-      const btn = document.createElement("button");
-      btn.className = "primary-btn";
-      btn.type = "button";
-      btn.innerHTML = `<span class="icon">💖</span><span>Tap for compliment</span>`;
-
-      const out = document.createElement("div");
-      out.className = "compliment-output";
-      out.textContent =
-        dayLog.lastCompliment ||
-        "Tap to generate a random compliment just for you.";
-
-      btn.addEventListener("click", () => {
-        const text =
-          compliments[Math.floor(Math.random() * compliments.length)];
-        out.textContent = text;
-        const log = ensureDayLog(dayObj.day);
-        log.lastCompliment = text;
-        activityLogs[dayObj.day] = log;
-        saveLoveState();
-      });
-
-      body.appendChild(btn);
-      body.appendChild(out);
-    }
-
-    // Mood slider
-    if (dayObj.type === "mood") {
-      const row = document.createElement("div");
-      row.className = "mood-slider-row";
-      const initialValue =
-        dayLog.mood != null && !Number.isNaN(Number(dayLog.mood))
-          ? Number(dayLog.mood)
-          : 7;
-      row.innerHTML = `
-        <input type="range" min="0" max="10" value="${initialValue}" />
-        <div class="mood-label">Soft okay 😊</div>
-      `;
-      const slider = row.querySelector("input");
-      const label = row.querySelector(".mood-label");
-      const moods = [
-        "Send help 🫠",
-        "Ehh, mid 😶",
-        "Kinda okay 🙂",
-        "Soft okay 😊",
-        "Low-key happy 🥰",
-        "Main character energy ✨"
-      ];
-      const updateLabel = (val) => {
-        const n = Number(val);
-        if (n <= 2) label.textContent = moods[0];
-        else if (n <= 4) label.textContent = moods[1];
-        else if (n <= 6) label.textContent = moods[2];
-        else if (n <= 7) label.textContent = moods[3];
-        else if (n <= 8) label.textContent = moods[4];
-        else label.textContent = moods[5];
-      };
-      updateLabel(initialValue);
-
-      slider.addEventListener("input", () => {
-        updateLabel(slider.value);
-        const log = ensureDayLog(dayObj.day);
-        log.mood = slider.value;
-        activityLogs[dayObj.day] = log;
-        saveLoveState();
-      });
-
-      body.appendChild(row);
-    }
-
-    // Quiz questions
-    if (dayObj.type === "quiz") {
-      const quizWrap = document.createElement("div");
-      quizWrap.className = "quiz-text";
-
-      if (dayObj.day === 6) {
-        quizWrap.innerHTML = `
-          <div class="quiz-question">
-            <strong>1.</strong> What was the first thing you noticed about me?
-          </div>
-          <div class="quiz-question">
-            <strong>2.</strong> When did you realise you actually like me fr?
-          </div>
-          <div class="quiz-question">
-            <strong>3.</strong> One word that describes our vibe?
-          </div>
-        `;
-      } else if (dayObj.day === 17) {
-        quizWrap.innerHTML = `
-          <div class="quiz-question">
-            <strong>1.</strong> First impression of me in 3 words?
-          </div>
-          <div class="quiz-question">
-            <strong>2.</strong> What do you think changed the most since then?
-          </div>
-          <div class="quiz-question">
-            <strong>3.</strong> What do you want to *never* change about us?
-          </div>
-        `;
-      } else if (dayObj.day === 27) {
-        quizWrap.innerHTML = `
-          <div class="quiz-question">
-            <strong>1.</strong> Best thing about us this year?
-          </div>
-          <div class="quiz-question">
-            <strong>2.</strong> One thing you want more of next year?
-          </div>
-          <div class="quiz-question">
-            <strong>3.</strong> One thing you want to leave behind?
-          </div>
-        `;
-      } else {
-        quizWrap.innerHTML = `
-          <div class="quiz-question">
-            <strong>1.</strong> When did you first think “okay, this might be something real”?
-          </div>
-          <div class="quiz-question">
-            <strong>2.</strong> What’s one tiny moment you keep replaying?
-          </div>
-        `;
-      }
-
-      body.appendChild(quizWrap);
-    }
-
-    // Optional answer box (for any type)
-    const answerBlock = document.createElement("div");
-    answerBlock.className = "answer-block";
-    answerBlock.innerHTML = `
-      <div>Optional: write your answer / thoughts here if you want me to read it inside the site too. 💌</div>
-      <textarea placeholder="Type here if you want..."></textarea>
-    `;
-    const textarea = answerBlock.querySelector("textarea");
-    textarea.value = dayLog.answer || "";
-    textarea.addEventListener("input", () => {
-      const log = ensureDayLog(dayObj.day);
-      log.answer = textarea.value;
-      activityLogs[dayObj.day] = log;
+    btn.addEventListener("click", ()=>{
+      const c=compliments[Math.floor(Math.random()*compliments.length)];
+      out.textContent=c;
+      log.lastCompliment=c;
+      activityLogs[d.day]=log;
       saveLoveState();
     });
-    body.appendChild(answerBlock);
 
-    if (act.note) {
-      const note = document.createElement("div");
-      note.className = "activity-note";
-      note.textContent = act.note;
-      body.appendChild(note);
-    }
+    body.appendChild(btn);
+    body.appendChild(out);
   }
 
-  // finally, load cloud state
-  loadFromCloud();
+  /* --- mood slider --- */
+  if(d.type==="mood"){
+    const row=document.createElement("div");
+    row.className="mood-slider-row";
+
+    const initial= log.mood ?? 7;
+
+    row.innerHTML=`
+      <input type="range" min="0" max="10" value="${initial}">
+      <div class="mood-label">😊</div>
+    `;
+
+    const slider=row.querySelector("input");
+    const label=row.querySelector(".mood-label");
+
+    const moods=[
+      "Send help 🫠",
+      "Ehh, mid 😶",
+      "Kinda okay 🙂",
+      "Soft okay 😊",
+      "Low-key happy 🥰",
+      "Main character energy ✨"
+    ];
+
+    function updateLabel(){
+      const v=Number(slider.value);
+      if(v<=2) label.textContent=moods[0];
+      else if(v<=4) label.textContent=moods[1];
+      else if(v<=6) label.textContent=moods[2];
+      else if(v<=7) label.textContent=moods[3];
+      else if(v<=8) label.textContent=moods[4];
+      else label.textContent=moods[5];
+    }
+
+    updateLabel();
+
+    slider.addEventListener("input", ()=>{
+      updateLabel();
+      log.mood=slider.value;
+      activityLogs[d.day]=log;
+      saveLoveState();
+    });
+
+    body.appendChild(row);
+  }
+
+  /* --- quiz questions --- */
+  if(d.type==="quiz"){
+    const wrap=document.createElement("div");
+    wrap.className="quiz-text";
+
+    if(d.day===6){
+      wrap.innerHTML=`
+        <div><strong>1.</strong> First thing you noticed about me?</div>
+        <div><strong>2.</strong> When did you realise you like me?</div>
+        <div><strong>3.</strong> One word for our vibe?</div>
+      `;
+    } else if(d.day===17){
+      wrap.innerHTML=`
+        <div><strong>1.</strong> First impression in 3 words?</div>
+        <div><strong>2.</strong> What changed?</div>
+        <div><strong>3.</strong> What should never change?</div>
+      `;
+    } else if(d.day===27){
+      wrap.innerHTML=`
+        <div><strong>1.</strong> Best thing about us this year?</div>
+        <div><strong>2.</strong> What do you want more of?</div>
+        <div><strong>3.</strong> What to leave behind?</div>
+      `;
+    } else {
+      wrap.innerHTML=`
+        <div><strong>1.</strong> When did you feel something real?</div>
+        <div><strong>2.</strong> One tiny moment you replay?</div>
+      `;
+    }
+
+    body.appendChild(wrap);
+  }
+
+  /* --- answer textarea (for any type) --- */
+  const ans=document.createElement("div");
+  ans.className="answer-block";
+  ans.innerHTML=`
+    <div>Optional: write anything here 💌</div>
+    <textarea placeholder="Type…"></textarea>
+  `;
+
+  const textarea=ans.querySelector("textarea");
+  textarea.value=log.answer || "";
+  textarea.addEventListener("input", ()=>{
+    log.answer=textarea.value;
+    activityLogs[d.day]=log;
+    saveLoveState();
+  });
+
+  body.appendChild(ans);
+
+  if(act.note){
+    const note=document.createElement("div");
+    note.className="activity-note";
+    note.textContent=act.note;
+    body.appendChild(note);
+  }
+}
+
 </script>
+
 
 </body>
 </html>
+
 
 
 
