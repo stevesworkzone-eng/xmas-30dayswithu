@@ -2290,11 +2290,14 @@ const SYNC_ENDPOINT = "https://your-backend-url.com/api/rose-xmas";
     }
 
     function saveLoveState() {
-      localStorage.setItem(LOVE_POINTS_KEY, String(lovePoints));
-      localStorage.setItem(COMPLETED_DAYS_KEY, JSON.stringify(completedDays));
-      localStorage.setItem(OPENED_PER_DATE_KEY, JSON.stringify(openedPerDate));
-      localStorage.setItem(ACTIVITY_LOGS_KEY, JSON.stringify(activityLogs));
-    }
+  localStorage.setItem(LOVE_POINTS_KEY, String(lovePoints));
+  localStorage.setItem(COMPLETED_DAYS_KEY, JSON.stringify(completedDays));
+  localStorage.setItem(OPENED_PER_DATE_KEY, JSON.stringify(openedPerDate));
+  localStorage.setItem(ACTIVITY_LOGS_KEY, JSON.stringify(activityLogs));
+
+  // NEW: also push to server
+  syncData();
+}
 
     updateLovePointsDisplay();
     updateProgress();
@@ -2726,4 +2729,5 @@ function syncData() {
   </script>
 </body>
 </html>
+
 
