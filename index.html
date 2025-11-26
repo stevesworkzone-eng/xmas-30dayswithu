@@ -1,0 +1,2698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>30 Days of Christmas With You 🎄❤️</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #050814;
+      --card: #101828;
+      --accent: #f97373;
+      --accent-soft: rgba(249,115,115,0.25);
+      --accent-2: #22c55e;
+      --text: #f9fafb;
+      --text-soft: #9ca3af;
+      --border: rgba(148,163,184,0.4);
+      --shadow-soft: 0 18px 40px rgba(15,23,42,0.9);
+      --radius-xl: 18px;
+      --radius-2xl: 26px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1f2933 0, #020617 55%, #000 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 24px 12px 40px;
+    }
+
+    /* LOGIN SCREEN */
+    .login-screen {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, #0f172a 0, #020617 60%, #000 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    #admin-screen {
+      z-index: 110;
+      display: none;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,1));
+      border-radius: 26px;
+      border: 1px solid rgba(148,163,184,0.7);
+      box-shadow: 0 22px 50px rgba(15,23,42,1);
+      padding: 20px 18px 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .admin-card {
+      max-width: 700px;
+      padding-bottom: 22px;
+    }
+
+    .login-orb {
+      position: absolute;
+      border-radius: 999px;
+      filter: blur(40px);
+      opacity: 0.8;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    .login-orb.red {
+      background: #f97373;
+      width: 200px;
+      height: 200px;
+      top: -60px;
+      right: -40px;
+    }
+    .login-orb.green {
+      background: #22c55e;
+      width: 180px;
+      height: 180px;
+      bottom: -60px;
+      left: -40px;
+    }
+
+    .login-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .login-title span.icon {
+      font-size: 22px;
+    }
+
+    .login-subtitle {
+      font-size: 13px;
+      color: var(--text-soft);
+      margin-bottom: 14px;
+    }
+
+    .login-label {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-bottom: 4px;
+    }
+
+    .login-input-wrap {
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.7);
+      background: rgba(15,23,42,0.96);
+      padding: 4px 6px 4px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .login-input-wrap span {
+      font-size: 14px;
+    }
+
+    .login-input-wrap input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .login-input-wrap input::placeholder {
+      color: rgba(148,163,184,0.8);
+    }
+
+    .login-btn {
+      width: 100%;
+      border-radius: 999px;
+      border: none;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-weight: 500;
+      background: linear-gradient(135deg, var(--accent), #fb7185);
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 14px 26px rgba(251,113,133,0.6);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .login-btn span.icon {
+      font-size: 16px;
+    }
+
+    .login-hint {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--text-soft);
+      line-height: 1.4;
+    }
+
+    .login-error {
+      font-size: 11px;
+      color: #fecaca;
+      margin-top: 4px;
+      min-height: 14px;
+    }
+
+    .login-badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .login-badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.5);
+      background: rgba(15,23,42,0.9);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--text-soft);
+    }
+
+    .login-badge span.icon {
+      font-size: 13px;
+    }
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .admin-close {
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.7);
+      background: rgba(15,23,42,0.9);
+      color: rgba(209,213,219,0.95);
+      padding: 4px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .admin-content {
+      margin-top: 10px;
+      max-height: 320px;
+      overflow-y: auto;
+      font-size: 12px;
+      color: var(--text-soft);
+      border-top: 1px dashed rgba(55,65,81,0.9);
+      padding-top: 8px;
+    }
+
+    .admin-summary {
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+
+    .admin-table-wrapper {
+      overflow-x: auto;
+    }
+
+    table.admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-top: 6px;
+    }
+
+    table.admin-table th,
+    table.admin-table td {
+      border: 1px solid rgba(51,65,85,0.9);
+      padding: 4px 6px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    table.admin-table th {
+      background: rgba(15,23,42,0.9);
+      color: rgba(226,232,240,0.95);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    table.admin-table tr:nth-child(even) {
+      background: rgba(15,23,42,0.8);
+    }
+
+    /* MAIN APP */
+
+    .app {
+      width: 100%;
+      max-width: 1080px;
+      background: linear-gradient(145deg, rgba(15,23,42,0.92), rgba(7,16,31,0.96));
+      border-radius: 28px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148,163,184,0.3);
+      padding: 20px 18px 24px;
+      position: relative;
+      overflow: hidden;
+      display: none; /* hidden until login */
+    }
+
+    @media (min-width: 768px) {
+      .app {
+        padding: 24px 26px 32px;
+      }
+    }
+
+    /* Glow orbs */
+    .orb {
+      position: absolute;
+      border-radius: 999px;
+      filter: blur(40px);
+      opacity: 0.8;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    .orb.red {
+      background: #f97373;
+      width: 220px;
+      height: 220px;
+      top: -60px;
+      right: -40px;
+    }
+    .orb.green {
+      background: #22c55e;
+      width: 200px;
+      height: 200px;
+      top: 40%;
+      left: -60px;
+    }
+    .orb.blue {
+      background: #38bdf8;
+      width: 240px;
+      height: 240px;
+      bottom: -80px;
+      right: 10%;
+    }
+
+    .app-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    @media (min-width: 768px) {
+      header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(248,250,252,0.1);
+      background: rgba(15,23,42,0.85);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--text-soft);
+    }
+
+    .badge span.icon {
+      font-size: 13px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 span.emojis {
+      font-size: 22px;
+    }
+
+    @media (min-width: 768px) {
+      h1 {
+        font-size: 26px;
+      }
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--text-soft);
+      max-width: 530px;
+      line-height: 1.5;
+    }
+
+    .name-form {
+      background: rgba(15,23,42,0.9);
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(148,163,184,0.45);
+      padding: 10px 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    @media (min-width: 768px) {
+      .name-form {
+        padding: 10px 14px;
+      }
+    }
+
+    .name-form label {
+      font-size: 12px;
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+
+    .name-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+      flex: 1;
+    }
+
+    .pill {
+      position: relative;
+      flex: 1;
+      min-width: 160px;
+      border-radius: 999px;
+      background: radial-gradient(circle at top left, rgba(148,163,184,0.35), rgba(15,23,42,1));
+      padding: 2px;
+      overflow: hidden;
+    }
+
+    .pill-inner {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 9px 4px 9px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.96);
+    }
+
+    .pill input {
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 13px;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .pill input::placeholder {
+      color: rgba(148,163,184,0.8);
+    }
+
+    .pill-button {
+      border: none;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      background: linear-gradient(135deg, var(--accent), #fb7185);
+      color: white;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 10px 22px rgba(251,113,133,0.45);
+      white-space: nowrap;
+    }
+
+    .pill-button span {
+      font-size: 13px;
+    }
+
+    .love-points-pill {
+      font-size: 11px;
+      border-radius: 999px;
+      padding: 5px 10px;
+      border: 1px solid rgba(248,250,252,0.35);
+      background: rgba(15,23,42,0.9);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #fecaca;
+      white-space: nowrap;
+    }
+
+    .love-points-pill span.icon {
+      font-size: 14px;
+    }
+
+    .love-points-pill strong {
+      color: #fee2e2;
+      font-size: 12px;
+    }
+
+    /* Progress bar */
+    .progress-wrapper {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--text-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(30,41,59,0.9);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), #fb7185);
+      transition: width 0.2s ease-out;
+    }
+
+    /* Calendar area */
+
+    .layout {
+      display: grid;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    @media (min-width: 900px) {
+      .layout {
+        grid-template-columns: 1.1fr 0.9fr;
+        align-items: flex-start;
+      }
+    }
+
+    .calendar-card {
+      background: radial-gradient(circle at top, rgba(15,23,42,0.95), rgba(15,23,42,0.98));
+      border-radius: var(--radius-2xl);
+      border: 1px solid rgba(148,163,184,0.55);
+      padding: 14px 14px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .calendar-card:before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(248,250,252,0.12), transparent 60%);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .calendar-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .calendar-title {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .calendar-title span {
+      font-size: 18px;
+    }
+
+    .calendar-sub {
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+
+    .calendar-badge {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(74,222,128,0.5);
+      background: rgba(22,163,74,0.12);
+      color: #bbf7d0;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .calendar-badge span.icon {
+      font-size: 13px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (min-width: 640px) {
+      .grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+      }
+    }
+
+    .day {
+      position: relative;
+      border-radius: 18px;
+      padding: 10px 7px 9px;
+      background: radial-gradient(circle at top, rgba(30,64,175,0.45), rgba(15,23,42,1));
+      border: 1px solid rgba(148,163,184,0.6);
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease,
+        background 0.16s ease, translate 0.16s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-height: 70px;
+    }
+
+    .day-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 4px;
+    }
+
+    .day-number {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .day-emoji {
+      font-size: 17px;
+      margin-left: 2px;
+    }
+
+    .day-tag {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+    }
+
+    .day-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      margin-top: 2px;
+      color: rgba(209,213,219,0.85);
+    }
+
+    .day-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34,197,94,0.25);
+    }
+
+    .day-cta {
+      font-size: 10px;
+      opacity: 0.9;
+    }
+
+    .day.locked {
+      cursor: default;
+      background: radial-gradient(circle at top, rgba(15,23,42,0.9), rgba(15,23,42,1));
+      border-style: dashed;
+      border-color: rgba(75,85,99,0.9);
+      color: rgba(148,163,184,0.9);
+    }
+
+    .day.locked .dot {
+      background: #4b5563;
+      box-shadow: none;
+    }
+
+    .day.locked .day-emoji {
+      opacity: 0.7;
+    }
+
+    .day.today {
+      border-color: rgba(248,250,252,0.85);
+      box-shadow: 0 0 0 1px rgba(248,250,252,0.4), 0 15px 30px rgba(15,23,42,1);
+      background: radial-gradient(circle at top, rgba(248,250,252,0.12), rgba(30,64,175,0.5));
+      translate: 0 -1px;
+    }
+
+    .day.completed {
+      border-color: rgba(249,115,115,0.9);
+      box-shadow: 0 0 0 1px rgba(249,115,115,0.4), 0 16px 30px rgba(15,23,42,1);
+      background: radial-gradient(circle at top, rgba(249,115,115,0.12), rgba(30,64,175,0.6));
+    }
+
+    .day.completed .day-tag {
+      color: #fecaca;
+    }
+
+    .day.completed .dot {
+      background: #f97373;
+      box-shadow: 0 0 0 4px rgba(248,113,113,0.3);
+    }
+
+    .day.completed .day-cta {
+      color: #fecaca;
+    }
+
+    .day:hover:not(.locked) {
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 16px 32px rgba(15,23,42,0.9);
+      border-color: rgba(248,250,252,0.7);
+    }
+
+    .day.locked:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Right side: Preview & tips */
+
+    .side-card {
+      background: radial-gradient(circle at top, rgba(15,23,42,0.95), rgba(15,23,42,0.98));
+      border-radius: var(--radius-2xl);
+      border: 1px solid rgba(148,163,184,0.55);
+      padding: 14px 14px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .side-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+
+    .side-title {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .side-title span {
+      font-size: 16px;
+    }
+
+    .side-tagline {
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+
+    .side-pill {
+      font-size: 11px;
+      border-radius: 999px;
+      padding: 4px 8px;
+      border: 1px solid rgba(248,250,252,0.3);
+      background: rgba(15,23,42,0.85);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--text-soft);
+    }
+
+    .preview-bubble {
+      margin-top: 10px;
+      background: linear-gradient(145deg, rgba(30,64,175,0.75), rgba(15,23,42,0.98));
+      border-radius: 18px;
+      padding: 10px 11px 11px;
+      border: 1px solid rgba(191,219,254,0.5);
+      box-shadow: 0 16px 30px rgba(15,23,42,0.9);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-bubble::before {
+      content: "";
+      position: absolute;
+      inset: -40px;
+      background-image: radial-gradient(circle at 10px 10px, rgba(248,250,252,0.4) 0, transparent 55%);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .preview-bubble-inner {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      gap: 9px;
+      align-items: flex-start;
+    }
+
+    .pfp {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: radial-gradient(circle at top, #f97373, #f97316);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 12px 24px rgba(15,23,42,0.95);
+      flex-shrink: 0;
+    }
+
+    .preview-text-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .preview-name-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    .preview-name-row strong {
+      font-weight: 600;
+    }
+
+    .preview-name-row span.dot-sep {
+      width: 3px;
+      height: 3px;
+      border-radius: 999px;
+      background: rgba(226,232,240,0.8);
+    }
+
+    .preview-name-row span.time {
+      color: rgba(226,232,240,0.8);
+      font-size: 11px;
+    }
+
+    .preview-main {
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .preview-main span.emoji {
+      font-size: 15px;
+    }
+
+    .preview-meta {
+      font-size: 11px;
+      color: #bfdbfe;
+      margin-top: 5px;
+    }
+
+    .tips-list {
+      margin-top: 12px;
+      font-size: 11px;
+      color: var(--text-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .tips-list li {
+      list-style: none;
+      display: flex;
+      gap: 6px;
+      align-items: flex-start;
+    }
+
+    .tips-list span.bullet {
+      font-size: 12px;
+      margin-top: 1px;
+    }
+
+    footer {
+      margin-top: 14px;
+      font-size: 10px;
+      color: rgba(148,163,184,0.9);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    footer span.hero {
+      color: rgba(248,250,252,0.95);
+    }
+
+    .admin-link {
+      border: none;
+      background: transparent;
+      font-size: 10px;
+      color: rgba(148,163,184,0.9);
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    /* Modal */
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.92);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 50;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 520px;
+      background: radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,1));
+      border-radius: 26px;
+      border: 1px solid rgba(148,163,184,0.8);
+      box-shadow: 0 22px 45px rgba(15,23,42,1);
+      padding: 16px 16px 16px;
+      position: relative;
+      max-height: min(560px, 90vh);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (min-width: 640px) {
+      .modal {
+        padding: 18px 18px 18px;
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .modal-header-main {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .modal-day-pill {
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 10px;
+      border: 1px solid rgba(148,163,184,0.7);
+      color: var(--text-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .modal-day-pill span.emoji {
+      font-size: 14px;
+    }
+
+    .modal-title {
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .modal-title span.day-num {
+      font-size: 18px;
+    }
+
+    .modal-close {
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.8);
+      background: rgba(15,23,42,0.85);
+      color: rgba(209,213,219,0.95);
+      padding: 5px 9px;
+      font-size: 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .modal-close span.icon {
+      font-size: 13px;
+    }
+
+    .modal-body {
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(55,65,81,0.9);
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .wish-text {
+      margin-bottom: 10px;
+    }
+
+    .wish-text p + p {
+      margin-top: 5px;
+    }
+
+    .activity-block {
+      margin-top: 10px;
+      padding: 8px 9px 9px;
+      border-radius: 18px;
+      border: 1px solid rgba(148,163,184,0.7);
+      background: radial-gradient(circle at top, rgba(15,23,42,0.95), rgba(15,23,42,1));
+    }
+
+    .activity-header {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .activity-header span.label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .activity-header span.icon {
+      font-size: 15px;
+    }
+
+    .activity-badge {
+      font-size: 10px;
+      border-radius: 999px;
+      padding: 2px 7px;
+      border: 1px solid rgba(248,250,252,0.35);
+      color: rgba(226,232,240,0.95);
+    }
+
+    .activity-body {
+      font-size: 12px;
+      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .activity-options {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .option-row {
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.8);
+      padding: 4px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15,23,42,0.98);
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .option-row span.text {
+      font-size: 12px;
+    }
+
+    .option-btn {
+      border-radius: 999px;
+      border: none;
+      padding: 3px 8px;
+      font-size: 11px;
+      background: rgba(248,250,252,0.06);
+      color: rgba(248,250,252,0.95);
+      cursor: pointer;
+    }
+
+    .option-btn:active {
+      transform: scale(0.97);
+    }
+
+    .option-row.selected {
+      border-color: rgba(249,115,115,0.95);
+      background: radial-gradient(circle at top, rgba(249,115,115,0.22), rgba(15,23,42,1));
+      box-shadow: 0 0 0 1px rgba(248,250,252,0.18);
+    }
+
+    .activity-note {
+      font-size: 11px;
+      color: rgba(156,163,175,0.95);
+    }
+
+    .compliment-output {
+      margin-top: 4px;
+      font-size: 12px;
+      color: #f9a8d4;
+    }
+
+    .primary-btn {
+      border-radius: 999px;
+      border: none;
+      padding: 5px 10px;
+      font-size: 12px;
+      background: linear-gradient(135deg, var(--accent), #fb7185);
+      color: white;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 10px 22px rgba(251,113,133,0.55);
+      margin-top: 6px;
+    }
+
+    .primary-btn span.icon {
+      font-size: 15px;
+    }
+
+    .primary-btn.disabled {
+      opacity: 0.6;
+      cursor: default;
+      box-shadow: none;
+    }
+
+    .mood-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .mood-slider-row input[type="range"] {
+      flex: 1;
+    }
+
+    .mood-label {
+      font-size: 12px;
+      color: #bfdbfe;
+      min-width: 90px;
+      text-align: center;
+    }
+
+    .quiz-question {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .quiz-text {
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+
+    .answer-block {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .answer-block textarea {
+      width: 100%;
+      min-height: 60px;
+      border-radius: 12px;
+      border: 1px solid rgba(148,163,184,0.7);
+      background: rgba(15,23,42,0.98);
+      color: var(--text);
+      font-size: 12px;
+      padding: 6px 8px;
+      resize: vertical;
+      outline: none;
+    }
+
+    .answer-block textarea::placeholder {
+      color: rgba(148,163,184,0.8);
+    }
+
+    .tiny {
+      font-size: 11px;
+      color: var(--text-soft);
+      margin-top: 6px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(55,65,81,0.95);
+      border-radius: 999px;
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGIN OVERLAY -->
+  <div class="login-screen" id="login-screen">
+    <div class="login-card">
+      <div class="login-orb red"></div>
+      <div class="login-orb green"></div>
+      <div class="login-inner">
+        <div class="login-badge-row">
+          <div class="login-badge"><span class="icon">🎄</span> Private Christmas space</div>
+          <div class="login-badge"><span class="icon">💌</span> Just for Rose</div>
+          <div class="login-badge"><span class="icon">🔐</span> Secret code only</div>
+        </div>
+        <div class="login-title">
+          <span class="icon">🎅🏻</span>
+          <span>Hi Rose, it’s our secret site</span>
+        </div>
+        <div class="login-subtitle">
+          Enter the code I gave you. If it doesn’t work, bully me on chat and I’ll fix it. 😌
+        </div>
+
+        <div class="login-label">Secret code</div>
+        <div class="login-input-wrap">
+          <span>🔑</span>
+          <input
+            id="login-password"
+            type="password"
+            placeholder="Type the magic password here"
+          />
+        </div>
+
+        <button class="login-btn" id="login-button" type="button">
+          <span class="icon">✨</span>
+          <span>Let me in</span>
+        </button>
+
+        <div class="login-error" id="login-error"></div>
+
+        <div class="login-hint">
+          P.S. If you forgot it, text me “your website gate is gatekeeping me” and I’ll resend. 🫶
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN OVERLAY -->
+  <div class="login-screen" id="admin-screen">
+    <div class="login-card admin-card">
+      <div class="login-orb red"></div>
+      <div class="login-orb green"></div>
+      <div class="login-inner">
+        <div class="admin-header">
+          <div class="login-title">
+            <span class="icon">🛠️</span>
+            <span>Admin dashboard</span>
+          </div>
+          <button class="admin-close" id="admin-close">
+            <span>✖️</span>
+            <span>Close</span>
+          </button>
+        </div>
+        <div class="login-subtitle">
+          View Rose’s progress, answers, and love points. Stored only on this device.
+        </div>
+
+        <div id="admin-login-section">
+          <div class="login-label">Admin code</div>
+          <div class="login-input-wrap">
+            <span>🧠</span>
+            <input
+              id="admin-password"
+              type="password"
+              placeholder="Type your admin password"
+            />
+          </div>
+          <button class="login-btn" id="admin-login-button" type="button">
+            <span class="icon">🔓</span>
+            <span>Unlock admin view</span>
+          </button>
+          <div class="login-error" id="admin-error"></div>
+        </div>
+
+        <div class="admin-content" id="admin-content" style="display:none;">
+          <div class="admin-summary" id="admin-summary"></div>
+          <div class="admin-table-wrapper">
+            <table class="admin-table" id="admin-table">
+              <thead>
+                <tr>
+                  <th>Day</th>
+                  <th>Title</th>
+                  <th>Type</th>
+                  <th>Completed?</th>
+                  <th>Mood</th>
+                  <th>Selections</th>
+                  <th>Answer / Notes</th>
+                </tr>
+              </thead>
+              <tbody id="admin-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div class="app" id="main-app">
+    <div class="orb red"></div>
+    <div class="orb green"></div>
+    <div class="orb blue"></div>
+
+    <div class="app-inner">
+      <header>
+        <div class="title-block">
+          <div class="badge-row">
+            <div class="badge"><span class="icon">🎄</span> 30-Day Christmas Love Drop</div>
+            <div class="badge"><span class="icon">💌</span> Daily wish + tiny game</div>
+            <div class="badge"><span class="icon">✨</span> Made just for Rose</div>
+          </div>
+          <h1>
+            30 Days of Christmas With <span id="gf-name-display">Rose</span>
+            <span class="emojis">🎅🏻❤️</span>
+          </h1>
+          <p class="subtitle">
+            Every day is a little Christmas surprise: a love note, a tiny game, a dare, or a mood-check. 
+            Open one box at a time and let me soft-spam you with love like the clingy Gen Z I am. 😌
+          </p>
+          <div class="progress-wrapper">
+            <span id="progress-text">0 / 30 days completed</span>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+          </div>
+        </div>
+        <div class="name-form">
+          <label for="gf-name">Customise it for you:</label>
+          <div class="name-right">
+            <div class="pill">
+              <div class="pill-inner">
+                <input
+                  id="gf-name"
+                  type="text"
+                  placeholder="Your name / nickname (e.g. chaos queen)"
+                />
+                <button class="pill-button" id="save-name">
+                  <span>✨</span> Save
+                </button>
+              </div>
+            </div>
+            <div class="love-points-pill">
+              <span class="icon">❤️</span>
+              <span>Love points:</span>
+              <strong id="love-points">0</strong>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="layout">
+        <section class="calendar-card">
+          <div class="calendar-header">
+            <div class="calendar-header-left">
+              <div class="calendar-title">
+                <span>📆</span> Tap a day to open your surprise
+              </div>
+              <div class="calendar-sub">
+                One card per real-life day only. No binging ahead 👀
+                We’re doing this slow-burn Christmas rom-com properly.
+              </div>
+            </div>
+            <div class="calendar-badge">
+              <span class="icon">🕊️</span>
+              0% cringe, 100% real
+            </div>
+          </div>
+
+          <div class="grid" id="calendar-grid"></div>
+        </section>
+
+        <aside class="side-card">
+          <div class="side-top">
+            <div>
+              <div class="side-title">
+                <span>💬</span> Example day message
+              </div>
+              <div class="side-tagline">
+                You’ll see something like this when you open a day.
+              </div>
+            </div>
+            <div class="side-pill">
+              <span>👀</span> Preview mode
+            </div>
+          </div>
+
+          <div class="preview-bubble">
+            <div class="preview-bubble-inner">
+              <div class="pfp">🎧</div>
+              <div class="preview-text-block">
+                <div class="preview-name-row">
+                  <strong>Me</strong>
+                  <span class="dot-sep"></span>
+                  <span class="time">Day 5 · 10:24 PM</span>
+                </div>
+                <div class="preview-main">
+                  Hey <span id="gf-name-inline">Rose</span>, tonight’s task is simple:
+                  pick a song that feels like “us”, send it to me, and tell me why you chose it.
+                  I wanna hear the soundtrack inside your head. <span class="emoji">🎶💚</span>
+                </div>
+                <div class="preview-meta">
+                  + Bonus: I’ll send you a voice note replying to your song like a dramatic Spotify review.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <ul class="tips-list">
+            <li>
+              <span class="bullet">🎁</span>
+              <span>Open one card per day and send me a screenshot so I know you did your “Christmas homework”.</span>
+            </li>
+            <li>
+              <span class="bullet">📱</span>
+              <span>Most prompts are meant to be done over chat / video call, so I can tease you live.</span>
+            </li>
+            <li>
+              <span class="bullet">🫶</span>
+              <span>As you mark tasks as done, your love points go up. Yes, I’m literally gamifying loving me.</span>
+            </li>
+          </ul>
+        </aside>
+      </div>
+
+      <footer>
+        <span>
+          Built for <span id="gf-name-footer">Rose</span> · 30 days of soft-launching my feelings over and over again.
+        </span>
+        <span class="hero">
+          From me, your low-budget Christmas rom-com hero 🎬❤️
+        </span>
+        <button class="admin-link" id="admin-open">Admin</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <div class="modal-header-main">
+          <div class="modal-day-pill">
+            <span class="emoji" id="modal-emoji">🎄</span>
+            <span id="modal-type-label">Love drop</span>
+          </div>
+          <div class="modal-title">
+            <span class="day-num" id="modal-day-num">Day 1</span>
+            <span id="modal-title-text">Title</span>
+          </div>
+        </div>
+        <button class="modal-close" id="modal-close">
+          <span class="icon">✖️</span>
+          Close
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="wish-text" id="modal-wish"></div>
+        <div class="activity-block" id="modal-activity"></div>
+        <button class="primary-btn" id="done-button" type="button">
+          <span class="icon">✅</span>
+          <span id="done-button-label">Mark this task as done (+10 ❤️)</span>
+        </button>
+        <div class="tiny">
+          P.S. If you actually do this, you earn +1000 points on the “best human on Earth” leaderboard that exists in my head.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === BASIC CONFIG ===
+    const LOGIN_PASSWORD = "mychristmascode"; // <<< change for Rose
+    const ADMIN_PASSWORD = "adminrose";       // <<< change for you
+    const LOGIN_KEY = "xmas_login_ok_v1";
+    const LOVE_POINTS_KEY = "love_points_v1";
+    const COMPLETED_DAYS_KEY = "completed_days_v1";
+    const OPENED_PER_DATE_KEY = "opened_per_date_v1";
+    const ACTIVITY_LOGS_KEY = "activity_logs_v1";
+    const POINTS_PER_TASK = 10;
+
+    // === DAYS DATA (same as before, shortened comment to save space) ===
+    const daysData = [
+      {
+        day: 1,
+        emoji: "✨",
+        label: "Soft launch",
+        title: "Warm-up wish",
+        type: "loveNote",
+        wish: [
+          "Day 1 of Christmas and I’m starting simple: I’m just really, really glad you exist.",
+          "If life was a playlist, you’d be that one song I never skip. 🔁❤️"
+        ],
+        activity: {
+          heading: "Tiny task",
+          description:
+            "Send me a selfie right now, no overthinking, no filters. I’ll reply with the first three words that pop into my head.",
+          note: "Yes, even if you “look messy”. Especially then."
+        }
+      },
+      {
+        day: 2,
+        emoji: "🎄",
+        label: "Cozy vibes",
+        title: "Christmas comfort check",
+        type: "mood",
+        wish: [
+          "If I could, I’d teleport to you with hot chocolate and a blanket right now.",
+          "Since I can’t (rude, I know), let me at least check on your little heart."
+        ],
+        activity: {
+          heading: "Mood check slider",
+          description: "Rate your current mood and tell me why:",
+          note: "Screenshot this and send it to me with a one-line explanation. I wanna know where your head’s at. 🧠💌"
+        }
+      },
+      {
+        day: 3,
+        emoji: "💌",
+        label: "Love spam",
+        title: "Random compliment drop",
+        type: "compliment",
+        wish: [
+          "You know what’s crazy? How accidentally you became my favourite notification.",
+          "I could be doing anything and your name popping up just feels like a mini-Christmas every time."
+        ],
+        activity: {
+          heading: "Tap for a compliment",
+          description:
+            "Hit the button and read your random compliment out loud (yes, out loud). Then send me a voice note re-reading it.",
+          note: "Let me hear how you sound when you talk nicely about yourself. 😏"
+        }
+      },
+      {
+        day: 4,
+        emoji: "🔥",
+        label: "Chaos energy",
+        title: "This or that – us edition",
+        type: "thisOrThat",
+        wish: [
+          "We’re very ‘argue and then send a meme’ coded and I love that for us.",
+          "So let’s make it official with a tiny this-or-that game."
+        ],
+        activity: {
+          heading: "Pick your chaos",
+          description:
+            "Choose your answers and then send them to me so I can judge you lovingly.",
+          options: [
+            "Movie night vs. late-night walk",
+            "Hoodies vs. oversized T-shirts",
+            "Video call in bed vs. long voice notes",
+            "Spicy teasing vs. soft compliments"
+          ],
+          note: "Spoiler: whatever you pick, I still choose you."
+        }
+      },
+      {
+        day: 5,
+        emoji: "🎧",
+        label: "Our soundtrack",
+        title: "Song of the day",
+        type: "simpleTask",
+        wish: [
+          "I wanna know what ‘us’ sounds like in your head.",
+          "Because in mine, it’s somewhere between soft and slightly unhinged. Like us."
+        ],
+        activity: {
+          heading: "Music mission",
+          description:
+            "Pick one song that feels like our vibe today and send it to me.",
+          note: "I’ll reply with a dramatic review + my own song of the day for us. 🎶"
+        }
+      },
+      {
+        day: 6,
+        emoji: "🧠",
+        label: "Mini quiz",
+        title: "How well do you know us?",
+        type: "quiz",
+        wish: [
+          "This is a safe quiz. There are no wrong answers. I just wanna see how your brain stores ‘us’.",
+          "Spoiler: you automatically pass for just being here."
+        ],
+        activity: {
+          heading: "Relationship pop-quiz",
+          description:
+            "Answer these in your head or send me your answers as messages:",
+          note: "Any answer = correct answer. I just want more pieces of your perspective."
+        }
+      },
+      {
+        day: 7,
+        emoji: "📸",
+        label: "Memory lane",
+        title: "Throwback attack",
+        type: "simpleTask",
+        wish: [
+          "Somewhere in your gallery, there’s a picture that reminds you of me.",
+          "And no, it doesn’t have to be my actual face. It can be a meme. Or food. Or a sky. Or chaos."
+        ],
+        activity: {
+          heading: "Gallery challenge",
+          description:
+            "Find one picture in your phone that low-key reminds you of me and send it.",
+          note: "I’ll guess why you picked it. If I’m wrong, you’re allowed to bully me."
+        }
+      },
+      {
+        day: 8,
+        emoji: "📱",
+        label: "Text game",
+        title: "3 words only",
+        type: "loveNote",
+        wish: [
+          "If I had to describe how I feel about you in just three words, my brain crashes.",
+          "But I’m still gonna try. And so are you."
+        ],
+        activity: {
+          heading: "3-word challenge",
+          description:
+            "Send me: 3 words for me, 3 words for ‘us’, 3 words for where you want us to be in a year.",
+          note: "No pressure to be deep. Silly answers are 100% valid."
+        }
+      },
+      {
+        day: 9,
+        emoji: "🎮",
+        label: "Game night",
+        title: "Would you rather – love edition",
+        type: "thisOrThat",
+        wish: [
+          "Time for a tiny would-you-rather. No stakes, just vibes.",
+          "I’m taking notes though. For science. And future dates."
+        ],
+        activity: {
+          heading: "Pick one each",
+          description:
+            "Answer honestly, then ask me the same and compare chaos levels.",
+          options: [
+            "Cuddle in silence vs. talk about everything for hours",
+            "Stay in with snacks vs. dress up and go out",
+            "Watch a rom-com vs. roast reality shows together",
+            "Random road trip vs. planned perfect date"
+          ],
+          note: "If we ever disagree, we just… do both. Problem solved."
+        }
+      },
+      {
+        day: 10,
+        emoji: "🕯️",
+        label: "Soft day",
+        title: "Gratitude but make it us",
+        type: "loveNote",
+        wish: [
+          "Today’s Christmas task is calm: no chaos, no teasing. Just gratitude.",
+          "Thank you for existing in my timeline. I genuinely like life more with you in it."
+        ],
+        activity: {
+          heading: "Grateful mini-list",
+          description:
+            "Send me 3 things you’re grateful for today (they don’t have to be big or deep).",
+          note: "Bonus if one of them is secretly me. I’ll pretend I didn’t notice."
+        }
+      },
+      {
+        day: 11,
+        emoji: "😈",
+        label: "Sassy mode",
+        title: "Roast me (gently)",
+        type: "simpleTask",
+        wish: [
+          "Balance is important: if I love you this much, you’re allowed to roast me a little.",
+          "Keyword: a little. Don’t go full savage, I’m sensitive. 😤"
+        ],
+        activity: {
+          heading: "Roast mission",
+          description:
+            "Send me 3 tiny roasts about me. Then send 3 things you secretly like about me so I don’t cry.",
+          note: "I’ll reply with my own roast/compliment combo for you."
+        }
+      },
+      {
+        day: 12,
+        emoji: "🌙",
+        label: "Night vibe",
+        title: "Late-night brain dump",
+        type: "mood",
+        wish: [
+          "You know those thoughts you get right before sleep when your brain suddenly decides to be emotional?",
+          "Yeah. Those. I want a tiny piece of that."
+        ],
+        activity: {
+          heading: "Sleepy thoughts",
+          description:
+            "Before you sleep tonight, send me 1 random thought about us. Any thought.",
+          note: "No structure, no pressure. Just whatever your half-asleep brain gives you."
+        }
+      },
+      {
+        day: 13,
+        emoji: "🎁",
+        label: "Future gift",
+        title: "Wishlist tease",
+        type: "simpleTask",
+        wish: [
+          "I like spoiling you in small ways, but I also like when you tell me what you want.",
+          "So today is about you being a little selfish. On purpose."
+        ],
+        activity: {
+          heading: "Christmas wish",
+          description:
+            "Send me 3 things you’d love us to do together in the next year. Big or tiny.",
+          note: "This is low-key my planning list. I’m serious."
+        }
+      },
+      {
+        day: 14,
+        emoji: "🫶",
+        label: "Affirmation",
+        title: "You vs. your doubts",
+        type: "compliment",
+        wish: [
+          "Sometimes your brain is mean to you. Just saying, I disagree with it 99% of the time.",
+          "Tonight, I wanna help you fight back a little."
+        ],
+        activity: {
+          heading: "Anti-doubt button",
+          description:
+            "Tap the compliment generator. Read it slowly. Then send me one thing you’re proud of yourself for this year.",
+          note: "I’ll send you one thing I’m proud of you for too."
+        }
+      },
+      {
+        day: 15,
+        emoji: "🍕",
+        label: "Date planning",
+        title: "Dream date menu",
+        type: "thisOrThat",
+        wish: [
+          "Even if we’re not in the same place yet, I’m mentally planning dates already.",
+          "So you better help me customise your experience, madam/sir."
+        ],
+        activity: {
+          heading: "Build-a-date",
+          description:
+            "Pick one from each and send your combo to me as ‘My ideal date: …’",
+          options: [
+            "Food: Pizza / Sushi / Street food / Dessert only",
+            "Vibe: Chill café / Rooftop / Beach / Netflix cave",
+            "Energy: Loud + fun / Quiet + deep / Mixed chaos"
+          ],
+          note: "If you send this, I’m basically obligated to make it happen one day."
+        }
+      },
+      {
+        day: 16,
+        emoji: "💭",
+        label: "What if",
+        title: "Alternate universe us",
+        type: "simpleTask",
+        wish: [
+          "In some universe we probably met earlier, or differently.",
+          "I like this version though. The slightly messy, delayed, but still magical one."
+        ],
+        activity: {
+          heading: "AU prompt",
+          description:
+            "Send me one ‘what if’ about us. (e.g. ‘What if we met in school?’)",
+          note: "I’ll reply with how I think we’d act in that timeline."
+        }
+      },
+      {
+        day: 17,
+        emoji: "📖",
+        label: "Story time",
+        title: "First impression check",
+        type: "quiz",
+        wish: [
+          "I will never get tired of hearing how you saw me in the beginning.",
+          "And how that changed. Or didn’t. 👀"
+        ],
+        activity: {
+          heading: "Story mini-quiz",
+          description:
+            "Answer these in text / voice note and send it to me:",
+          note: "I’ll respond with my version too. Fair trade."
+        }
+      },
+      {
+        day: 18,
+        emoji: "💫",
+        label: "Manifesting",
+        title: "Future us spell",
+        type: "mood",
+        wish: [
+          "Consider this a tiny Christmas ritual: we manifest good things for us only.",
+          "No bad vibes allowed in this section."
+        ],
+        activity: {
+          heading: "Manifest line",
+          description:
+            "Complete this and send it: ‘One year from now, I want us to be…’",
+          note: "Doesn’t have to be realistic. Just honest."
+        }
+      },
+      {
+        day: 19,
+        emoji: "😌",
+        label: "Comfort",
+        title: "Safe place check",
+        type: "loveNote",
+        wish: [
+          "I hope you know you’re allowed to be fully yourself with me. No performing. No ‘looking okay’ when you’re not.",
+          "You’re my person. Even on the messy days."
+        ],
+        activity: {
+          heading: "Honesty card",
+          description:
+            "Tell me one thing that’s been stressing you lately, even if you think it’s ‘small’.",
+          note: "My job: listen, not fix (unless you want suggestions)."
+        }
+      },
+      {
+        day: 20,
+        emoji: "🎮",
+        label: "Mini game",
+        title: "Lightning questions",
+        type: "thisOrThat",
+        wish: [
+          "Fast questions, no overthinking. Just vibes.",
+          "Send your answers back as a quick list and I’ll do mine."
+        ],
+        activity: {
+          heading: "Speed round",
+          description: "Answer with the first thing that comes to mind:",
+          options: [
+            "Morning text or goodnight text?",
+            "Calls or long chats?",
+            "Planning or pure spontaneity?",
+            "Matching PJs or matching hoodies?"
+          ],
+          note: "Yes, matching fits will happen. This is foreshadowing."
+        }
+      },
+      {
+        day: 21,
+        emoji: "📦",
+        label: "Care package",
+        title: "If I could send a box",
+        type: "simpleTask",
+        wish: [
+          "If teleportation was a thing, I’d send you a box with snacks, a hoodie, and a handwritten letter.",
+          "Until then, we use words."
+        ],
+        activity: {
+          heading: "Virtual care box",
+          description:
+            "Tell me 3 things you’d want in a care package from me.",
+          note: "I’ll tell you what I’d actually pack in real life."
+        }
+      },
+      {
+        day: 22,
+        emoji: "❤️",
+        label: "Soft hour",
+        title: "Things I adore",
+        type: "compliment",
+        wish: [
+          "There are so many tiny things about you that make my brain go: ‘wow I’m obsessed.’",
+          "Let me generate a few and share them with you."
+        ],
+        activity: {
+          heading: "Love generator",
+          description:
+            "Tap to generate a random ‘thing I adore about you’. Then send me one back about me.",
+          note: "We’re doing mutual appreciation, no escaping."
+        }
+      },
+      {
+        day: 23,
+        emoji: "🎅",
+        label: "Santa mode",
+        title: "If I was your Santa",
+        type: "simpleTask",
+        wish: [
+          "If I was your personal Santa, my only job would be to make December easier for you.",
+          "Even from a distance."
+        ],
+        activity: {
+          heading: "Santa request",
+          description:
+            "Tell me one realistic thing I can do this month to make your life a little lighter.",
+          note: "I’ll actually try to do it. This is legally binding. (Kind of.)"
+        }
+      },
+      {
+        day: 24,
+        emoji: "🕯️",
+        label: "Christmas Eve",
+        title: "Slow night promise",
+        type: "loveNote",
+        wish: [
+          "Christmas Eve rule: no pressure, no expectations. Just us being present however we can.",
+          "Call, chat, voice notes, memes – anything counts as long as it’s us."
+        ],
+        activity: {
+          heading: "Eve ritual",
+          description:
+            "At some point tonight, send me a ‘right now’ pic (whatever you’re doing).",
+          note: "I’ll send mine too, and we’ll pretend we’re sharing the same space for a second."
+        }
+      },
+      {
+        day: 25,
+        emoji: "🎄",
+        label: "Christmas Day",
+        title: "Big Christmas wish",
+        type: "loveNote",
+        wish: [
+          "Merry Christmas, love. 🎄",
+          "My biggest wish this year is simple: more time with you. In calls, in chats, in real life – all of it."
+        ],
+        activity: {
+          heading: "Christmas message",
+          description:
+            "Send me one long paragraph about anything: us, your day, your hopes, your chaos.",
+          note: "I’ll reply with a full Christmas letter back."
+        }
+      },
+      {
+        day: 26,
+        emoji: "💬",
+        label: "Post-Christmas",
+        title: "Debrief mode",
+        type: "simpleTask",
+        wish: [
+          "Okay, Christmas done. Now we gossip.",
+          "I want the debrief: feelings, chaos, drama, all of it."
+        ],
+        activity: {
+          heading: "Debrief time",
+          description:
+            "Tell me: what was your favourite part of this Christmas (even if it’s something tiny)?",
+          note: "And don’t say ‘nothing’, I will fight you."
+        }
+      },
+      {
+        day: 27,
+        emoji: "📆",
+        label: "Year review",
+        title: "Us this year",
+        type: "quiz",
+        wish: [
+          "Even if this year wasn’t perfect, I’m really glad it had you in it.",
+          "Let’s rate us, just for fun."
+        ],
+        activity: {
+          heading: "Year rating",
+          description:
+            "Answer: 1) Best thing about us this year? 2) One thing you want more of next year? 3) One thing you wanna leave behind?",
+          note: "I’ll answer the same for you."
+        }
+      },
+      {
+        day: 28,
+        emoji: "🧩",
+        label: "Tiny secret",
+        title: "Tell me a thing",
+        type: "simpleTask",
+        wish: [
+          "I love when you let me into your brain a bit more.",
+          "So here’s a small gentle nosey prompt."
+        ],
+        activity: {
+          heading: "Secret share",
+          description:
+            "Tell me one thing you’ve been wanting to say but haven’t yet – silly or serious.",
+          note: "No judgement. Ever."
+        }
+      },
+      {
+        day: 29,
+        emoji: "🌌",
+        label: "Big picture",
+        title: "Why you matter",
+        type: "loveNote",
+        wish: [
+          "You’re not just ‘someone I talk to’. You’re very much main-character energy in my life now.",
+          "Thank you for letting me exist in your world too."
+        ],
+        activity: {
+          heading: "Anchor moment",
+          description:
+            "Send me one moment (even small) where you felt really happy we had each other.",
+          note: "I’ll send mine back. Spoiler: I have several."
+        }
+      },
+      {
+        day: 30,
+        emoji: "🎆",
+        label: "Almost New Year",
+        title: "Soft reset",
+        type: "mood",
+        wish: [
+          "30 days later and I’m still choosing you. Every day.",
+          "Let’s carry this energy into the new year, yeah?"
+        ],
+        activity: {
+          heading: "New year intention",
+          description:
+            "Complete this and send it: ‘Next year, I want us to…’",
+          note: "Keep this message somewhere. We’ll revisit it together."
+        }
+      }
+    ];
+
+    const compliments = [
+      "You’re way prettier than your front camera thinks.",
+      "Your personality is my favourite thing you wear.",
+      "You make ordinary days feel like main-character scenes.",
+      "I feel weirdly safer just knowing you exist.",
+      "Your brain + your heart = unfair combo.",
+      "You’re not ‘a lot’. You’re exactly enough.",
+      "I genuinely like who I am when I’m with you.",
+      "You’re my favourite notification on my phone.",
+      "If you vanished from my life, it would be illegal.",
+      "I’m low-key obsessed with you and high-key not sorry."
+    ];
+
+    // === GLOBAL STATE ===
+    const loginScreen = document.getElementById("login-screen");
+    const mainApp = document.getElementById("main-app");
+    const loginInput = document.getElementById("login-password");
+    const loginBtn = document.getElementById("login-button");
+    const loginError = document.getElementById("login-error");
+
+    const adminScreen = document.getElementById("admin-screen");
+    const adminOpenBtn = document.getElementById("admin-open");
+    const adminCloseBtn = document.getElementById("admin-close");
+    const adminLoginSection = document.getElementById("admin-login-section");
+    const adminInput = document.getElementById("admin-password");
+    const adminLoginBtn = document.getElementById("admin-login-button");
+    const adminError = document.getElementById("admin-error");
+    const adminContent = document.getElementById("admin-content");
+    const adminSummary = document.getElementById("admin-summary");
+    const adminTableBody = document.getElementById("admin-table-body");
+
+    const nameInput = document.getElementById("gf-name");
+    const saveNameBtn = document.getElementById("save-name");
+    const nameDisplay = document.getElementById("gf-name-display");
+    const nameInline = document.getElementById("gf-name-inline");
+    const nameFooter = document.getElementById("gf-name-footer");
+
+    const lovePointsSpan = document.getElementById("love-points");
+    const progressText = document.getElementById("progress-text");
+    const progressFill = document.getElementById("progress-fill");
+
+    const modalBackdrop = document.getElementById("modal-backdrop");
+    const modalClose = document.getElementById("modal-close");
+    const modalEmoji = document.getElementById("modal-emoji");
+    const modalTypeLabel = document.getElementById("modal-type-label");
+    const modalDayNum = document.getElementById("modal-day-num");
+    const modalTitleText = document.getElementById("modal-title-text");
+    const modalWish = document.getElementById("modal-wish");
+    const modalActivity = document.getElementById("modal-activity");
+    const doneButton = document.getElementById("done-button");
+    const doneButtonLabel = document.getElementById("done-button-label");
+
+    const grid = document.getElementById("calendar-grid");
+    const dayCardMap = {};
+
+    let lovePoints = Number(localStorage.getItem(LOVE_POINTS_KEY) || "0");
+    let completedDays = [];
+    let openedPerDate = {};
+    let activityLogs = {};
+    let currentDayObj = null;
+
+    // === LOGIN LOGIC ===
+    function showApp() {
+      loginScreen.style.display = "none";
+      mainApp.style.display = "block";
+    }
+
+    function handleLogin() {
+      const val = loginInput.value.trim();
+      if (val === LOGIN_PASSWORD) {
+        localStorage.setItem(LOGIN_KEY, "true");
+        showApp();
+      } else {
+        loginError.textContent = "Wrong code. Try again or spam my chat. 😤";
+      }
+    }
+
+    if (localStorage.getItem(LOGIN_KEY) === "true") {
+      showApp();
+    }
+
+    loginBtn.addEventListener("click", handleLogin);
+    loginInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleLogin();
+      }
+    });
+
+    // === ADMIN LOGIC ===
+    adminOpenBtn.addEventListener("click", () => {
+      adminScreen.style.display = "flex";
+      adminError.textContent = "";
+      adminInput.value = "";
+      adminContent.style.display = "none";
+      adminLoginSection.style.display = "block";
+    });
+
+    adminCloseBtn.addEventListener("click", () => {
+      adminScreen.style.display = "none";
+    });
+
+    function renderAdminView() {
+      const totalCompleted = completedDays.length;
+      const percent = Math.round((totalCompleted / 30) * 100);
+      adminSummary.innerHTML = `
+        <div><strong>Love points:</strong> ${lovePoints}</div>
+        <div><strong>Days completed:</strong> ${totalCompleted} / 30 (${percent}%)</div>
+      `;
+
+      adminTableBody.innerHTML = "";
+      daysData.forEach((d) => {
+        const log = activityLogs[d.day] || {};
+        const tr = document.createElement("tr");
+        const completed = completedDays.includes(d.day);
+        const mood = log.mood != null ? log.mood : "-";
+        const selections = log.selections && log.selections.length
+          ? log.selections.join(" | ")
+          : "-";
+        const answer = log.answer ? log.answer.replace(/\n/g, " / ") : "-";
+
+        tr.innerHTML = `
+          <td>${d.day}</td>
+          <td>${d.title}</td>
+          <td>${d.type}</td>
+          <td>${completed ? "Yes" : "No"}</td>
+          <td>${mood}</td>
+          <td>${selections}</td>
+          <td>${answer}</td>
+        `;
+        adminTableBody.appendChild(tr);
+      });
+    }
+
+    function handleAdminLogin() {
+      const val = adminInput.value.trim();
+      if (val === ADMIN_PASSWORD) {
+        adminError.textContent = "";
+        adminLoginSection.style.display = "none";
+        adminContent.style.display = "block";
+        renderAdminView();
+      } else {
+        adminError.textContent = "Wrong admin code.";
+      }
+    }
+
+    adminLoginBtn.addEventListener("click", handleAdminLogin);
+    adminInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleAdminLogin();
+      }
+    });
+
+    // === NAME HANDLING ===
+    function setNameEverywhere(name) {
+      const clean = name && name.trim() ? name.trim() : "Rose";
+      nameDisplay.textContent = clean;
+      nameFooter.textContent = clean;
+      nameInline.textContent = clean;
+    }
+
+    const storedName = localStorage.getItem("gfName");
+    if (storedName) {
+      nameInput.value = storedName;
+      setNameEverywhere(storedName);
+    } else {
+      const defaultName = "Rose";
+      nameInput.value = defaultName;
+      setNameEverywhere(defaultName);
+      localStorage.setItem("gfName", defaultName);
+    }
+
+    saveNameBtn.addEventListener("click", () => {
+      const val = nameInput.value.trim();
+      const nameToSave = val || "Rose";
+      localStorage.setItem("gfName", nameToSave);
+      setNameEverywhere(nameToSave);
+    });
+
+    nameInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        saveNameBtn.click();
+      }
+    });
+
+    // === LOAD STATE ===
+    try {
+      completedDays = JSON.parse(localStorage.getItem(COMPLETED_DAYS_KEY) || "[]");
+    } catch (e) {
+      completedDays = [];
+    }
+    try {
+      openedPerDate = JSON.parse(localStorage.getItem(OPENED_PER_DATE_KEY) || "{}");
+    } catch (e) {
+      openedPerDate = {};
+    }
+    try {
+      activityLogs = JSON.parse(localStorage.getItem(ACTIVITY_LOGS_KEY) || "{}");
+    } catch (e) {
+      activityLogs = {};
+    }
+
+    function updateLovePointsDisplay() {
+      lovePointsSpan.textContent = lovePoints;
+    }
+
+    function updateProgress() {
+      const done = completedDays.length;
+      const total = 30;
+      const percent = (done / total) * 100;
+      progressText.textContent = `${done} / ${total} days completed`;
+      progressFill.style.width = `${percent}%`;
+    }
+
+    function saveLoveState() {
+      localStorage.setItem(LOVE_POINTS_KEY, String(lovePoints));
+      localStorage.setItem(COMPLETED_DAYS_KEY, JSON.stringify(completedDays));
+      localStorage.setItem(OPENED_PER_DATE_KEY, JSON.stringify(openedPerDate));
+      localStorage.setItem(ACTIVITY_LOGS_KEY, JSON.stringify(activityLogs));
+    }
+
+    updateLovePointsDisplay();
+    updateProgress();
+
+    function isDayCompleted(dayNumber) {
+      return completedDays.includes(dayNumber);
+    }
+
+    function ensureDayLog(dayNumber) {
+      if (!activityLogs[dayNumber]) {
+        activityLogs[dayNumber] = {};
+      }
+      return activityLogs[dayNumber];
+    }
+
+    // === CALENDAR RENDER ===
+    function isToday(dayNumber) {
+      const now = new Date();
+      const month = now.getMonth(); // 0 = Jan, 11 = Dec
+      if (month !== 11) return false;
+      return now.getDate() === dayNumber;
+    }
+
+    function isLocked(dayNumber) {
+      const now = new Date();
+      const month = now.getMonth();
+      if (month !== 11) return false; // not December => all open for fun
+      return dayNumber > now.getDate();
+    }
+
+    function getTodayKey() {
+      const now = new Date();
+      return now.toISOString().slice(0, 10); // YYYY-MM-DD
+    }
+
+    daysData.forEach((d) => {
+      const card = document.createElement("button");
+      card.className = "day";
+      card.dataset.day = String(d.day);
+
+      const locked = isLocked(d.day);
+      if (locked) card.classList.add("locked");
+      if (!locked && isToday(d.day)) card.classList.add("today");
+      if (isDayCompleted(d.day)) card.classList.add("completed");
+
+      card.innerHTML = `
+        <div class="day-main">
+          <div>
+            <div class="day-number">${d.day}</div>
+            <div class="day-tag">${isDayCompleted(d.day) ? "Completed" : d.label}</div>
+          </div>
+          <div class="day-emoji">${locked ? "🔒" : isDayCompleted(d.day) ? "❤️" : d.emoji}</div>
+        </div>
+        <div class="day-footer">
+          <div class="day-status">
+            <div class="dot"></div>
+            <span>${locked ? "Locked (future)" : isDayCompleted(d.day) ? "Done · reopen" : "Ready to open"}</span>
+          </div>
+          <div class="day-cta">
+            ${locked ? "Patience, elf ✨" : isDayCompleted(d.day) ? "View again" : "Open ✨"}
+          </div>
+        </div>
+      `;
+
+      if (!locked) {
+        card.addEventListener("click", () => {
+          const todayKey = getTodayKey();
+          const previouslyOpened = openedPerDate[todayKey];
+
+          if (previouslyOpened && previouslyOpened !== d.day) {
+            alert(
+              `You already opened Day ${previouslyOpened} today.\n\nOne card per day only. Come back tomorrow for a new one. 💌`
+            );
+            return;
+          }
+
+          if (!previouslyOpened) {
+            openedPerDate[todayKey] = d.day;
+            saveLoveState();
+          }
+
+          openModal(d);
+        });
+      }
+
+      grid.appendChild(card);
+      dayCardMap[d.day] = card;
+    });
+
+    function updateDayCardCompleted(dayNumber) {
+      const card = dayCardMap[dayNumber];
+      if (!card) return;
+      card.classList.add("completed");
+      const tag = card.querySelector(".day-tag");
+      if (tag) tag.textContent = "Completed";
+      const status = card.querySelector(".day-status span:last-child");
+      if (status) status.textContent = "Done · reopen";
+      const cta = card.querySelector(".day-cta");
+      if (cta) cta.textContent = "View again";
+      const emoji = card.querySelector(".day-emoji");
+      if (emoji) emoji.textContent = "❤️";
+    }
+
+    // === MODAL ===
+    function openModal(dayObj) {
+      currentDayObj = dayObj;
+      modalEmoji.textContent = dayObj.emoji;
+      modalDayNum.textContent = `Day ${dayObj.day}`;
+      modalTitleText.textContent = `· ${dayObj.title}`;
+      modalTypeLabel.textContent = {
+        loveNote: "Soft love note",
+        mood: "Mood check",
+        compliment: "Compliment drop",
+        thisOrThat: "Mini game",
+        simpleTask: "Tiny mission",
+        quiz: "Story quiz"
+      }[dayObj.type] || "Love drop";
+
+      modalWish.innerHTML = "";
+      (dayObj.wish || []).forEach((line) => {
+        const p = document.createElement("p");
+        p.innerHTML = line;
+        modalWish.appendChild(p);
+      });
+
+      renderActivity(dayObj);
+
+      const completed = isDayCompleted(dayObj.day);
+      updateDoneButtonState(completed);
+
+      modalBackdrop.classList.add("active");
+    }
+
+    function closeModal() {
+      modalBackdrop.classList.remove("active");
+      currentDayObj = null;
+    }
+
+    function updateDoneButtonState(completed) {
+      if (completed) {
+        doneButton.classList.add("disabled");
+        doneButton.disabled = true;
+        doneButtonLabel.textContent = "Already marked as done ❤️";
+      } else {
+        doneButton.classList.remove("disabled");
+        doneButton.disabled = false;
+        doneButtonLabel.textContent = `Mark this task as done (+${POINTS_PER_TASK} ❤️)`;
+      }
+    }
+
+    doneButton.addEventListener("click", () => {
+      if (!currentDayObj) return;
+      const dayNumber = currentDayObj.day;
+      if (isDayCompleted(dayNumber)) return;
+
+      completedDays.push(dayNumber);
+      lovePoints += POINTS_PER_TASK;
+      updateLovePointsDisplay();
+      updateDayCardCompleted(dayNumber);
+      updateDoneButtonState(true);
+      updateProgress();
+      saveLoveState();
+
+      alert(
+        `Task for Day ${dayNumber} marked as done!\n\n+${POINTS_PER_TASK} love points unlocked. You overachiever. ❤️`
+      );
+    });
+
+    modalClose.addEventListener("click", closeModal);
+    modalBackdrop.addEventListener("click", (e) => {
+      if (e.target === modalBackdrop) closeModal();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeModal();
+    });
+
+    // === ACTIVITY RENDERERS WITH HIGHLIGHT & ANSWERS ===
+    function renderActivity(dayObj) {
+      const act = dayObj.activity || {};
+      const dayLog = ensureDayLog(dayObj.day);
+
+      modalActivity.innerHTML = `
+        <div class="activity-header">
+          <span class="label">
+            <span class="icon">${
+              dayObj.type === "thisOrThat"
+                ? "🎮"
+                : dayObj.type === "mood"
+                ? "📊"
+                : dayObj.type === "quiz"
+                ? "🧠"
+                : dayObj.type === "compliment"
+                ? "💖"
+                : "📝"
+            }</span>
+            <span>${act.heading || "Activity"}</span>
+          </span>
+          <span class="activity-badge">${dayObj.label}</span>
+        </div>
+        <div class="activity-body">
+          <div>${act.description || ""}</div>
+        </div>
+      `;
+
+      const body = modalActivity.querySelector(".activity-body");
+
+      // thisOrThat options with highlight
+      if (dayObj.type === "thisOrThat" && act.options?.length) {
+        const wrap = document.createElement("div");
+        wrap.className = "activity-options";
+        const selectedSet = new Set(dayLog.selections || []);
+
+        act.options.forEach((opt) => {
+          const row = document.createElement("div");
+          row.className = "option-row";
+          if (selectedSet.has(opt)) row.classList.add("selected");
+          row.innerHTML = `
+            <span class="text">${opt}</span>
+            <button class="option-btn" type="button">Pick 🫰</button>
+          `;
+          const btn = row.querySelector("button");
+          const toggleSelection = () => {
+            const log = ensureDayLog(dayObj.day);
+            log.selections = log.selections || [];
+            if (row.classList.contains("selected")) {
+              row.classList.remove("selected");
+              log.selections = log.selections.filter((x) => x !== opt);
+            } else {
+              row.classList.add("selected");
+              if (!log.selections.includes(opt)) log.selections.push(opt);
+            }
+            activityLogs[dayObj.day] = log;
+            saveLoveState();
+          };
+          row.addEventListener("click", (e) => {
+            // avoid double-trigger when clicking button
+            if (e.target.tagName.toLowerCase() === "button") {
+              toggleSelection();
+            } else {
+              toggleSelection();
+            }
+          });
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleSelection();
+          });
+          wrap.appendChild(row);
+        });
+        body.appendChild(wrap);
+      }
+
+      // Compliment generator
+      if (dayObj.type === "compliment") {
+        const btn = document.createElement("button");
+        btn.className = "primary-btn";
+        btn.type = "button";
+        btn.innerHTML = `<span class="icon">💖</span><span>Tap for compliment</span>`;
+
+        const out = document.createElement("div");
+        out.className = "compliment-output";
+        out.textContent =
+          dayLog.lastCompliment ||
+          "Tap to generate a random compliment just for you.";
+
+        btn.addEventListener("click", () => {
+          const text =
+            compliments[Math.floor(Math.random() * compliments.length)];
+          out.textContent = text;
+          const log = ensureDayLog(dayObj.day);
+          log.lastCompliment = text;
+          activityLogs[dayObj.day] = log;
+          saveLoveState();
+        });
+
+        body.appendChild(btn);
+        body.appendChild(out);
+      }
+
+      // Mood slider
+      if (dayObj.type === "mood") {
+        const row = document.createElement("div");
+        row.className = "mood-slider-row";
+        const initialValue =
+          dayLog.mood != null && !Number.isNaN(Number(dayLog.mood))
+            ? Number(dayLog.mood)
+            : 7;
+        row.innerHTML = `
+          <input type="range" min="0" max="10" value="${initialValue}" />
+          <div class="mood-label">Soft okay 😊</div>
+        `;
+        const slider = row.querySelector("input");
+        const label = row.querySelector(".mood-label");
+        const moods = [
+          "Send help 🫠",
+          "Ehh, mid 😶",
+          "Kinda okay 🙂",
+          "Soft okay 😊",
+          "Low-key happy 🥰",
+          "Main character energy ✨"
+        ];
+        const updateLabel = (val) => {
+          const n = Number(val);
+          if (n <= 2) label.textContent = moods[0];
+          else if (n <= 4) label.textContent = moods[1];
+          else if (n <= 6) label.textContent = moods[2];
+          else if (n <= 7) label.textContent = moods[3];
+          else if (n <= 8) label.textContent = moods[4];
+          else label.textContent = moods[5];
+        };
+        updateLabel(initialValue);
+
+        slider.addEventListener("input", () => {
+          updateLabel(slider.value);
+          const log = ensureDayLog(dayObj.day);
+          log.mood = slider.value;
+          activityLogs[dayObj.day] = log;
+          saveLoveState();
+        });
+
+        body.appendChild(row);
+      }
+
+      // Quiz questions
+      if (dayObj.type === "quiz") {
+        const quizWrap = document.createElement("div");
+        quizWrap.className = "quiz-text";
+
+        if (dayObj.day === 6) {
+          quizWrap.innerHTML = `
+            <div class="quiz-question">
+              <strong>1.</strong> What was the first thing you noticed about me?
+            </div>
+            <div class="quiz-question">
+              <strong>2.</strong> When did you realise you actually like me fr?
+            </div>
+            <div class="quiz-question">
+              <strong>3.</strong> One word that describes our vibe?
+            </div>
+          `;
+        } else if (dayObj.day === 17) {
+          quizWrap.innerHTML = `
+            <div class="quiz-question">
+              <strong>1.</strong> First impression of me in 3 words?
+            </div>
+            <div class="quiz-question">
+              <strong>2.</strong> What do you think changed the most since then?
+            </div>
+            <div class="quiz-question">
+              <strong>3.</strong> What do you want to *never* change about us?
+            </div>
+          `;
+        } else if (dayObj.day === 27) {
+          quizWrap.innerHTML = `
+            <div class="quiz-question">
+              <strong>1.</strong> Best thing about us this year?
+            </div>
+            <div class="quiz-question">
+              <strong>2.</strong> One thing you want more of next year?
+            </div>
+            <div class="quiz-question">
+              <strong>3.</strong> One thing you want to leave behind?
+            </div>
+          `;
+        } else {
+          quizWrap.innerHTML = `
+            <div class="quiz-question">
+              <strong>1.</strong> When did you first think “okay, this might be something real”?
+            </div>
+            <div class="quiz-question">
+              <strong>2.</strong> What’s one tiny moment you keep replaying?
+            </div>
+          `;
+        }
+
+        body.appendChild(quizWrap);
+      }
+
+      // Optional answer box (for any type)
+      const answerBlock = document.createElement("div");
+      answerBlock.className = "answer-block";
+      answerBlock.innerHTML = `
+        <div>Optional: write your answer / thoughts here if you want me to read it inside the site too. 💌</div>
+        <textarea placeholder="Type here if you want..."></textarea>
+      `;
+      const textarea = answerBlock.querySelector("textarea");
+      textarea.value = dayLog.answer || "";
+      textarea.addEventListener("input", () => {
+        const log = ensureDayLog(dayObj.day);
+        log.answer = textarea.value;
+        activityLogs[dayObj.day] = log;
+        saveLoveState();
+      });
+      body.appendChild(answerBlock);
+
+      if (act.note) {
+        const note = document.createElement("div");
+        note.className = "activity-note";
+        note.textContent = act.note;
+        body.appendChild(note);
+      }
+    }
+  </script>
+</body>
+</html>
