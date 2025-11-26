@@ -278,6 +278,33 @@
     table.admin-table tr:nth-child(even) {
       background: rgba(15,23,42,0.8);
     }
+.admin-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.admin-reset {
+  border-radius: 999px;
+  border: 1px solid rgba(248,113,113,0.8);
+  background: radial-gradient(circle at top, rgba(127,29,29,0.95), rgba(15,23,42,1));
+  color: #fee2e2;
+  font-size: 11px;
+  padding: 4px 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 10px 22px rgba(127,29,29,0.8);
+}
+
+.admin-reset:hover {
+  filter: brightness(1.05);
+}
+
+.admin-reset:active {
+  transform: scale(0.97);
+}
 
     /* MAIN APP */
 
@@ -2141,7 +2168,8 @@
     const adminContent = document.getElementById("admin-content");
     const adminSummary = document.getElementById("admin-summary");
     const adminTableBody = document.getElementById("admin-table-body");
-
+    const adminResetBtn = document.getElementById("admin-reset-button");
+    
     const nameInput = document.getElementById("gf-name");
     const saveNameBtn = document.getElementById("save-name");
     const nameDisplay = document.getElementById("gf-name-display");
@@ -2391,6 +2419,53 @@
 
     updateLovePointsDisplay();
     updateProgress();
+    async function resetAllData() {
+  const sure = confirm(
+    "This will erase all love points, completed days and answers (local + cloud) and reload the page.\n\nOnly do this for testing. Continue?"
+  );
+  if (!sure) return;
+
+  try {
+    // 1) Clear in-memory state
+    lovePoints = 0;
+    completedDays = [];
+    openedPerDate = {};
+    activityLogs = {};
+
+    // 2) Clear localStorage
+    localStorage.removeItem(LOVE_POINTS_KEY);
+    localStorage.removeItem(COMPLETED_DAYS_KEY);
+    localStorage.removeItem(OPENED_PER_DATE_KEY);
+    localStorage.removeItem(ACTIVITY_LOGS_KEY);
+    localStorage.removeItem("gfName");
+    localStorage.removeItem(LOGIN_KEY); // so login screen shows again
+
+    // 3) Delete Firestore doc
+    try {
+      await deleteDoc(userDocRef);
+      console.log("Firestore doc deleted ✅");
+    } catch (err) {
+      console.error("Error deleting Firestore doc:", err);
+      // Even if cloud delete fails, we still reset local
+    }
+
+    // 4) Reset UI
+    setNameEverywhere("Rose");
+    nameInput.value = "Rose";
+    updateLovePointsDisplay();
+    updateProgress();
+    daysData.forEach((d) => resetDayCard(d.day));
+
+    alert("All data reset. The page will reload now.");
+    window.location.reload();
+  } catch (err) {
+    console.error("Failed to reset data:", err);
+    alert("Reset failed. Check console for details.");
+  }
+}
+
+adminResetBtn.addEventListener("click", resetAllData);
+
 
     function isDayCompleted(dayNumber) {
       return completedDays.includes(dayNumber);
@@ -2490,6 +2565,39 @@
       const emoji = card.querySelector(".day-emoji");
       if (emoji) emoji.textContent = "❤️";
     }
+
+    function resetDayCard(dayNumber) {
+  const card = dayCardMap[dayNumber];
+  if (!card) return;
+
+  card.classList.remove("completed");
+
+  const dayData = daysData.find((d) => d.day === dayNumber);
+
+  const tag = card.querySelector(".day-tag");
+  if (tag) {
+    tag.textContent = dayData ? dayData.label : "Ready";
+  }
+
+  const status = card.querySelector(".day-status span:last-child");
+  if (status) {
+    status.textContent = "Ready to open";
+  }
+
+  const cta = card.querySelector(".day-cta");
+  if (cta) {
+    cta.textContent = "Open ✨";
+  }
+
+  const emoji = card.querySelector(".day-emoji");
+  if (emoji) {
+    if (isLocked(dayNumber)) {
+      emoji.textContent = "🔒";
+    } else {
+      emoji.textContent = dayData ? dayData.emoji : "🎄";
+    }
+  }
+}
 
     // === MODAL + ACTIVITY ===
     function openModal(dayObj) {
@@ -2793,4 +2901,5 @@
   </script>
 </body>
 </html>
+
 
