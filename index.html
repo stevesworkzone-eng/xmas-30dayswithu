@@ -360,6 +360,11 @@
       right: 10%;
     }
 
+    .app-inner is {
+      position: relative;
+      z-index: 1;
+    }
+
     .app-inner {
       position: relative;
       z-index: 1;
@@ -1647,16 +1652,17 @@
     },
     {
       day: 3,
-      label: "Mood check",
-      type: "mood",
-      emoji: "🌙",
+      label: "Flirty quick game",
+      type: "quiz",
+      emoji: "🔥",
       wish: [
-        "No tasks today, just feelings.",
-        "Wherever your mind is at – stressed, calm, confused – I still want to be the person you can message without overthinking."
+        "Ok, tiny spicy upgrade.",
+        "Today is about you confessing things… in the safest, most unserious way. 😈"
       ],
       activity: {
-        heading: "How’s your heart today?",
-        description: "Slide the bar to match your current vibe. No right or wrong answer."
+        heading: "Spicy rapid-fire",
+        description: "Answer in your head, in the box, or later on chat. No overthinking, just first instinct.",
+        note: "Think of it like a soft ‘truth’ round, Gen Z edition."
       }
     },
     {
@@ -1705,16 +1711,17 @@
     },
     {
       day: 7,
-      label: "Weekly mood",
-      type: "mood",
-      emoji: "📊",
+      label: "Truth or spice",
+      type: "quiz",
+      emoji: "🌶️",
       wish: [
-        "End of the first week.",
-        "Whatever this week was for you — heavy, light, messy — I’m proud you made it through."
+        "End of week 1. Time for a playful little confession day.",
+        "Nothing dramatic, just you being a tiny bit honest about us."
       ],
       activity: {
-        heading: "Weekly vibe check",
-        description: "Drag the slider to match how this week felt overall."
+        heading: "Soft truth round",
+        description: "Pick one thing you’d tell me if we were playing truth-or-dare and you chose ‘truth’.",
+        note: "Can be serious, funny, flirty – your choice."
       }
     },
     {
@@ -1723,12 +1730,12 @@
       type: "simpleTask",
       emoji: "🌌",
       wish: [
-        "Let’s be delusional for a second.",
+        "Let’s be delusional for a second. Your Fav word hehe..",
         "Not in a 5-year plan way. In a ‘tiny fantasy moment’ way."
       ],
       activity: {
         heading: "Small ‘one day’ dream",
-        description: "Think of a small future moment with me (coffee date, movie night, cooking disaster together, random road trip).",
+        description: "Think of a small future moment with me (coffee date, movie night, first night, cooking disaster together, random road trip).",
         note: "Write it if you want. Or just picture it and smile to yourself like a weirdo."
       }
     },
@@ -1771,16 +1778,17 @@
     },
     {
       day: 11,
-      label: "Mood check",
-      type: "mood",
-      emoji: "🌧️",
+      label: "Long-distance confessions",
+      type: "quiz",
+      emoji: "✈️",
       wish: [
-        "Some days are just heavy for no reason.",
-        "If today is one of those, I’m hugging you from here."
+        "Some days the distance hits harder than usual.",
+        "Today is for admitting what you actually miss the most."
       ],
       activity: {
-        heading: "Honest scale",
-        description: "No pretending. Just slide to where you really are today."
+        heading: "Miss-you edition",
+        description: "Think about one specific thing you’re craving from me right now – a hug, a look, a stupid joke, a fight+makeup, anything.",
+        note: "Write it down so I know what to over-deliver on when we meet."
       }
     },
     {
@@ -1836,16 +1844,24 @@
     },
     {
       day: 15,
-      label: "Midway mood",
-      type: "mood",
-      emoji: "💫",
+      label: "Would you rather: us",
+      type: "thisOrThat",
+      emoji: "😉",
       wish: [
-        "Halfway through 30 days.",
-        "Thank you for actually opening these like the main character you are."
+        "Halfway through 30 days, so let’s play.",
+        "Today is unserious but kind of exposing. 😌"
       ],
       activity: {
-        heading: "Halfway check-in",
-        description: "How are you feeling about life, us, and everything in between?"
+        heading: "‘Us’ edition choices",
+        description: "Tap everything you’d pick if you had to choose our vibe.",
+        options: [
+          "Slow-burn couple who took forever to admit it",
+          "Chaotic couple who fall first, think later",
+          "Best friends to lovers energy",
+          "Enemies to lovers but soft version",
+          "Low-key clingy but only with each other",
+          "Publicly chill, privately obsessed"
+        ]
       }
     },
     {
@@ -1931,16 +1947,17 @@
     },
     {
       day: 21,
-      label: "Mood check",
-      type: "mood",
-      emoji: "🔥",
+      label: "Spicy what-if",
+      type: "quiz",
+      emoji: "💫",
       wish: [
-        "End-of-month energy: either exhausted or chaotic or both.",
-        "Wherever you are on that spectrum, I’m rooting for you."
+        "End-of-month energy.",
+        "Let’s be a bit delulu again, but in a very us-core way."
       ],
       activity: {
-        heading: "Where are you at?",
-        description: "Slide to match your current ‘life is life-ing’ level."
+        heading: "What if we were together today?",
+        description: "Imagine we magically had today together in the same city. What’s the first thing you’d drag me to do with you?",
+        note: "Coffee, cuddles, fight+makeup, shopping, chaos? Your call."
       }
     },
     {
@@ -2011,16 +2028,17 @@
     },
     {
       day: 26,
-      label: "Mood check",
-      type: "mood",
-      emoji: "🥱",
+      label: "Late night Qs",
+      type: "quiz",
+      emoji: "🌙",
       wish: [
-        "Post-Christmas crash is real.",
-        "Whatever energy you’re at, it’s valid."
+        "Post-Christmas crash = overthinking hours.",
+        "So let’s direct that overthinking towards us, obviously."
       ],
       activity: {
-        heading: "Energy level",
-        description: "Slide based on how socially/emotionally drained or recharged you feel."
+        heading: "Sleepover questions (virtual)",
+        description: "Think of this as a 2 AM call vibe: one thing you want us to do more, and one thing you secretly love that we already do.",
+        note: "Write it here or send it to me when the mood hits."
       }
     },
     {
@@ -2206,7 +2224,7 @@
 
       tr.innerHTML = `
         <td>${d.day}</td>
-        <td>${d.title || d.label}</td>
+        <td>${d.label}</td>
         <td>${d.type}</td>
         <td>${completedDays.includes(d.day) ? "Yes" : "No"}</td>
         <td>${mood}</td>
@@ -2610,68 +2628,58 @@
       body.appendChild(out);
     }
 
-    /* --- mood slider --- */
-    if (d.type === "mood") {
-      const row = document.createElement("div");
-      row.className = "mood-slider-row";
-
-      const initial = log.mood ?? 7;
-
-      row.innerHTML = `
-        <input type="range" min="0" max="10" value="${initial}">
-        <div class="mood-label">😊</div>
-      `;
-
-      const slider = row.querySelector("input");
-      const label = row.querySelector(".mood-label");
-
-      const moods = [
-        "Send help 🫠",
-        "Ehh, mid 😶",
-        "Kinda okay 🙂",
-        "Soft okay 😊",
-        "Low-key happy 🥰",
-        "Main character energy ✨"
-      ];
-
-      function updateLabel() {
-        const v = Number(slider.value);
-        if (v <= 2) label.textContent = moods[0];
-        else if (v <= 4) label.textContent = moods[1];
-        else if (v <= 6) label.textContent = moods[2];
-        else if (v <= 7) label.textContent = moods[3];
-        else if (v <= 8) label.textContent = moods[4];
-        else label.textContent = moods[5];
-      }
-
-      updateLabel();
-
-      slider.addEventListener("input", () => {
-        updateLabel();
-        log.mood = slider.value;
-        activityLogs[d.day] = log;
-        saveLoveState();
-      });
-
-      body.appendChild(row);
-    }
-
-    /* --- quiz questions --- */
+    /* --- quiz questions (extra spice per day) --- */
     if (d.type === "quiz") {
       const wrap = document.createElement("div");
       wrap.className = "quiz-text";
 
-      if (d.day === 6) {
+      if (d.day === 3) {
+        wrap.innerHTML = `
+          <div><strong>1.</strong> What’s one thing about me you find unfairly attractive?</div>
+          <div><strong>2.</strong> When do you miss me the most during the day?</div>
+          <div><strong>3.</strong> If we were on a date tonight, where would you drag me first?</div>
+        `;
+      } else if (d.day === 5) {
+        wrap.innerHTML = `
+          <div><strong>1.</strong> Which song is ‘us’ and why?</div>
+          <div><strong>2.</strong> Is there a lyric that low-key feels like it was written about us?</div>
+        `;
+      } else if (d.day === 6) {
         wrap.innerHTML = `
           <div><strong>1.</strong> First thing you noticed about me?</div>
           <div><strong>2.</strong> When did you realise you like me?</div>
           <div><strong>3.</strong> One word for our vibe?</div>
+        `;
+      } else if (d.day === 11) {
+        wrap.innerHTML = `
+          <div><strong>1.</strong> What do you miss the most about having me physically there?</div>
+          <div><strong>2.</strong> What’s one thing you’d do immediately if I landed in your city today?</div>
+        `;
+      } else if (d.day === 13) {
+        wrap.innerHTML = `
+          <div><strong>1.</strong> Which random moment with me replays in your head?</div>
+          <div><strong>2.</strong> Why that one?</div>
         `;
       } else if (d.day === 17) {
         wrap.innerHTML = `
           <div><strong>1.</strong> First impression in 3 words?</div>
           <div><strong>2.</strong> What changed?</div>
           <div><strong>3.</strong> What should never change?</div>
+        `;
+      } else if (d.day === 21) {
+        wrap.innerHTML = `
+          <div><strong>1.</strong> If we had today together, what’s the first thing we’d do?</div>
+          <div><strong>2.</strong> What’s one ‘wild but realistic’ plan you want us to do next year?</div>
+        `;
+      } else if (d.day === 23) {
+        wrap.innerHTML = `
+          <div><strong>1.</strong> If our story was a movie, what would this year’s title be?</div>
+          <div><strong>2.</strong> Which moment this year would be the trailer scene?</div>
+        `;
+      } else if (d.day === 26) {
+        wrap.innerHTML = `
+          <div><strong>1.</strong> What’s one thing you want us to do more?</div>
+          <div><strong>2.</strong> What’s one thing you secretly love that we already do?</div>
         `;
       } else if (d.day === 27) {
         wrap.innerHTML = `
