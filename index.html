@@ -360,17 +360,28 @@
       right: 10%;
     }
 
-    .app-inner is {
-      position: relative;
-      z-index: 1;
-    }
-
     .app-inner {
       position: relative;
       z-index: 1;
     }
 
     header {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    @media (min-width: 768px) {
+      header is {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    header {
+      /* fix stray selector above */
       display: flex;
       flex-direction: column;
       gap: 14px;
@@ -1601,14 +1612,16 @@
   const compliments = [
     "You are my favourite notification of the day.",
     "If softness had a face, it would look exactly like you.",
-    "You don’t even realise how effortlessly loveable you are.",
+    "You don’t even realise how effortlessly loveable you are. Hehe just kidding (but also not).",
     "You’re the calm and the chaos at the same time and I’m obsessed.",
     "You walking into my life is still my favourite plot twist.",
     "You make even the most boring days feel like a movie scene.",
     "Your laugh is my comfort sound.",
+    "Mutheee… I’m still not over you.",
     "I don’t believe in perfect people, but you’re dangerously close.",
     "You’re my favourite place to emotionally overshare.",
-    "You make ‘home’ feel like a person, not a place."
+    "I love you my Chaos Queen.",
+    "You make my idea of ‘home’ feel like a person, not a place."
   ];
 
   const daysData = [
@@ -1629,7 +1642,7 @@
     },
     {
       day: 2,
-      label: "This or that",
+      label: "Cozy choices",
       type: "thisOrThat",
       emoji: "☕",
       wish: [
@@ -1645,7 +1658,8 @@
           "Night calls",
           "Random voice notes",
           "Inside jokes only we understand",
-          "You roasting me with love"
+          "You roasting me with love",
+          "Hugs and kisses"
         ],
         note: "You can pick more than one. Obviously, you’re complicated."
       }
@@ -1661,8 +1675,8 @@
       ],
       activity: {
         heading: "Spicy rapid-fire",
-        description: "Answer in your head, in the box, or later on chat. No overthinking, just first instinct.",
-        note: "Think of it like a soft ‘truth’ round, Gen Z edition."
+        description: "Answer in the box, or later on chat. No overthinking, just first instinct.",
+        note: "Think of it like a soft ‘truth’ round, Gen Z."
       }
     },
     {
@@ -1730,7 +1744,7 @@
       type: "simpleTask",
       emoji: "🌌",
       wish: [
-        "Let’s be delusional for a second. Your Fav word hehe..",
+        "Let’s be delusional for a second. Your fav word hehe.",
         "Not in a 5-year plan way. In a ‘tiny fantasy moment’ way."
       ],
       activity: {
@@ -1741,24 +1755,17 @@
     },
     {
       day: 9,
-      label: "This or that",
-      type: "thisOrThat",
-      emoji: "🎮",
+      label: "Naughty or nice",
+      type: "quiz",
+      emoji: "🎅",
       wish: [
-        "More data collection. I am building the ‘How to Love You Properly’ handbook.",
-        "Today’s edition: comfort things."
+        "Santa is checking your file.",
+        "Today is about all the ways you’ve been ‘nice’ and ‘naughty’ with me this year."
       ],
       activity: {
-        heading: "Comfort pack",
-        description: "Tap everything that sounds comforting right now.",
-        options: [
-          "Long chaotic call",
-          "Short ‘I’m here’ text",
-          "Memes only, no serious talk",
-          "Deep conversation about everything",
-          "Being left alone but knowing I care",
-          "Food delivery + zero questions asked"
-        ]
+        heading: "List check",
+        description: "Think Christmas list, but it’s just about us.",
+        note: "You can keep it wholesome or a tiny bit chaotic, your choice."
       }
     },
     {
@@ -1793,16 +1800,17 @@
     },
     {
       day: 12,
-      label: "Compliment drop",
-      type: "compliment",
-      emoji: "💌",
+      label: "Christmas wishlist",
+      type: "quiz",
+      emoji: "🎁",
       wish: [
-        "Your brain forgets you’re amazing. This button is the antidote.",
-        "Use it like medicine."
+        "Today is your Christmas wishlist day.",
+        "Not gifts – moments."
       ],
       activity: {
-        heading: "Hit me",
-        description: "Tap for a random compliment from me to you."
+        heading: "Moment wishlist",
+        description: "List 3 tiny, realistic things you’d love us to do together in the next year.",
+        note: "Think small but cute – movie nights, cities, food, rituals."
       }
     },
     {
@@ -1822,7 +1830,7 @@
     },
     {
       day: 14,
-      label: "This or that",
+      label: "Rom-com choices",
       type: "thisOrThat",
       emoji: "🍿",
       wish: [
@@ -1845,23 +1853,16 @@
     {
       day: 15,
       label: "Would you rather: us",
-      type: "thisOrThat",
+      type: "quiz",
       emoji: "😉",
       wish: [
         "Halfway through 30 days, so let’s play.",
         "Today is unserious but kind of exposing. 😌"
       ],
       activity: {
-        heading: "‘Us’ edition choices",
-        description: "Tap everything you’d pick if you had to choose our vibe.",
-        options: [
-          "Slow-burn couple who took forever to admit it",
-          "Chaotic couple who fall first, think later",
-          "Best friends to lovers energy",
-          "Enemies to lovers but soft version",
-          "Low-key clingy but only with each other",
-          "Publicly chill, privately obsessed"
-        ]
+        heading: "‘Us’ edition",
+        description: "Answer in your head or in the box – I dare you to be honest.",
+        note: "This is literally fanfic-writing our relationship."
       }
     },
     {
@@ -1896,38 +1897,32 @@
     },
     {
       day: 18,
-      label: "Compliment drop",
-      type: "compliment",
+      label: "Secret soft spots",
+      type: "quiz",
       emoji: "🌷",
       wish: [
         "Reminder: you are not hard to love.",
         "Your mind lies. I don’t."
       ],
       activity: {
-        heading: "Spam the button",
-        description: "Whenever your self-esteem dips today, tap and remind yourself how I see you."
+        heading: "Soft spot confessions",
+        description: "Today is about the tiny things that melt you.",
+        note: "You’re allowed to be shamelessly soft here."
       }
     },
     {
       day: 19,
-      label: "This or that",
-      type: "thisOrThat",
+      label: "How to love you better",
+      type: "quiz",
       emoji: "📱",
       wish: [
         "Communication style edition.",
         "Help me fine-tune how I should show up for you."
       ],
       activity: {
-        heading: "Pick your favourites",
-        description: "Tap everything that feels like your love language from me.",
-        options: [
-          "Good morning / good night texts",
-          "Random ‘drink water’ reminders",
-          "Paragraphs when you’re low",
-          "Memes instead of lectures",
-          "Calling out your overthinking gently",
-          "Just sitting in silence on call"
-        ]
+        heading: "Upgrade me",
+        description: "Tell me exactly how to be better for you.",
+        note: "Yes, I’m literally asking for a manual."
       }
     },
     {
@@ -1976,7 +1971,7 @@
     },
     {
       day: 23,
-      label: "Memory lane",
+      label: "Movie scene",
       type: "quiz",
       emoji: "🎬",
       wish: [
@@ -1991,7 +1986,7 @@
     },
     {
       day: 24,
-      label: "This or that",
+      label: "Cozy mode",
       type: "thisOrThat",
       emoji: "🍰",
       wish: [
@@ -2022,7 +2017,7 @@
       ],
       activity: {
         heading: "Christmas wish",
-        description: "If you could have one tiny, realistic wish with me today, what would it be?",
+        description: "If you could have one tiny, realistic wish with me today, what would it be? Also one long paragraph about anything: us, your day, your hopes, your chaos.",
         note: "Send it to me later so I can see how many I can actually make happen."
       }
     },
@@ -2058,21 +2053,22 @@
     },
     {
       day: 28,
-      label: "Compliment drop",
-      type: "compliment",
+      label: "Bedtime softness",
+      type: "quiz",
       emoji: "🌙",
       wish: [
         "You deserve soft words on the days you feel the least worthy of them.",
         "So obviously I’m giving you some."
       ],
       activity: {
-        heading: "Nighttime softness",
-        description: "Tap before you sleep today and let me tuck your brain in properly."
+        heading: "Night thoughts",
+        description: "Right before you sleep today, think about this: what feeling do you want more of with us next year?",
+        note: "You can write it here so we don’t forget."
       }
     },
     {
       day: 29,
-      label: "This or that",
+      label: "Future episodes",
       type: "thisOrThat",
       emoji: "🧭",
       wish: [
@@ -2628,7 +2624,7 @@
       body.appendChild(out);
     }
 
-    /* --- quiz questions (extra spice per day) --- */
+    /* --- quiz questions (custom per day) --- */
     if (d.type === "quiz") {
       const wrap = document.createElement("div");
       wrap.className = "quiz-text";
@@ -2650,21 +2646,52 @@
           <div><strong>2.</strong> When did you realise you like me?</div>
           <div><strong>3.</strong> One word for our vibe?</div>
         `;
+      } else if (d.day === 7) {
+        wrap.innerHTML = `
+          <div><strong>1.</strong> What’s one thing you’d admit only in a 2 AM call?</div>
+          <div><strong>2.</strong> What’s one truth about us that makes you smile?</div>
+        `;
+      } else if (d.day === 9) {
+        wrap.innerHTML = `
+          <div><strong>1.</strong> One way you’ve been ‘nice’ to me this year?</div>
+          <div><strong>2.</strong> One tiny ‘naughty/chaotic’ thing you’d do if we were together right now?</div>
+        `;
       } else if (d.day === 11) {
         wrap.innerHTML = `
           <div><strong>1.</strong> What do you miss the most about having me physically there?</div>
-          <div><strong>2.</strong> What’s one thing you’d do immediately if I landed in your city today?</div>
+          <div><strong>2.</strong> What’s one moment you’re dying to experience with me in person?</div>
+        `;
+      } else if (d.day === 12) {
+        wrap.innerHTML = `
+          <div><strong>1.</strong> Three tiny things you want us to do together next year?</div>
+          <div><strong>2.</strong> Which one of those is priority no.1?</div>
         `;
       } else if (d.day === 13) {
         wrap.innerHTML = `
           <div><strong>1.</strong> Which random moment with me replays in your head?</div>
           <div><strong>2.</strong> Why that one?</div>
         `;
+      } else if (d.day === 15) {
+        wrap.innerHTML = `
+          <div><strong>1.</strong> Would you rather we have a chaotic first trip or a cozy first stay-in weekend?</div>
+          <div><strong>2.</strong> Would you rather I surprise-visit you or you surprise-visit me?</div>
+          <div><strong>3.</strong> Would you rather we be low-key in public & dramatic in private, or opposite?</div>
+        `;
       } else if (d.day === 17) {
         wrap.innerHTML = `
           <div><strong>1.</strong> First impression in 3 words?</div>
           <div><strong>2.</strong> What changed?</div>
           <div><strong>3.</strong> What should never change?</div>
+        `;
+      } else if (d.day === 18) {
+        wrap.innerHTML = `
+          <div><strong>1.</strong> What compliment from me do you secretly love hearing?</div>
+          <div><strong>2.</strong> What tiny gesture from me makes you feel weirdly safe?</div>
+        `;
+      } else if (d.day === 19) {
+        wrap.innerHTML = `
+          <div><strong>1.</strong> When you’re low, how do you actually want me to show up?</div>
+          <div><strong>2.</strong> What’s one thing I already do that you don’t want me to stop?</div>
         `;
       } else if (d.day === 21) {
         wrap.innerHTML = `
@@ -2685,12 +2712,17 @@
         wrap.innerHTML = `
           <div><strong>1.</strong> Best thing about us this year?</div>
           <div><strong>2.</strong> What do you want more of?</div>
-          <div><strong>3.</strong> What to leave behind?</div>
+          <div><strong>3.</strong> What do you want to leave behind?</div>
+        `;
+      } else if (d.day === 28) {
+        wrap.innerHTML = `
+          <div><strong>1.</strong> What feeling do you want more of with us next year?</div>
+          <div><strong>2.</strong> What’s one thing you hope future-us never loses?</div>
         `;
       } else {
         wrap.innerHTML = `
-          <div><strong>1.</strong> When did you feel something real?</div>
-          <div><strong>2.</strong> One tiny moment you replay?</div>
+          <div><strong>1.</strong> When did you feel something real with me?</div>
+          <div><strong>2.</strong> One tiny moment you still think about?</div>
         `;
       }
 
