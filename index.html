@@ -1532,6 +1532,9 @@
     </div>
   </div>
 
+  <!-- BACKGROUND MUSIC (HIDDEN) -->
+  <audio id="bg-audio" loop style="display:none;"></audio>
+
   <!-- Modal -->
   <div class="modal-backdrop" id="modal-backdrop">
     <div class="modal" role="dialog" aria-modal="true">
@@ -2105,6 +2108,40 @@
     }
   ];
 
+  /* SONGS MAP – 30 songs, 1 per day */
+  const songs = {
+    1: "audio/day1.mp3",
+    2: "audio/day2.mp3",
+    3: "audio/day3.mp3",
+    4: "audio/day4.mp3",
+    5: "audio/day5.mp3",
+    6: "audio/day6.mp3",
+    7: "audio/day7.mp3",
+    8: "audio/day8.mp3",
+    9: "audio/day9.mp3",
+    10: "audio/day10.mp3",
+    11: "audio/day11.mp3",
+    12: "audio/day12.mp3",
+    13: "audio/day13.mp3",
+    14: "audio/day14.mp3",
+    15: "audio/day15.mp3",
+    16: "audio/day16.mp3",
+    17: "audio/day17.mp3",
+    18: "audio/day18.mp3",
+    19: "audio/day19.mp3",
+    20: "audio/day20.mp3",
+    21: "audio/day21.mp3",
+    22: "audio/day22.mp3",
+    23: "audio/day23.mp3",
+    24: "audio/day24.mp3",
+    25: "audio/day25.mp3",
+    26: "audio/day26.mp3",
+    27: "audio/day27.mp3",
+    28: "audio/day28.mp3",
+    29: "audio/day29.mp3",
+    30: "audio/day30.mp3"
+  };
+
   /* LOGIN ELEMENTS */
   const loginScreen = document.getElementById("login-screen");
   const loginInput = document.getElementById("login-password");
@@ -2151,6 +2188,9 @@
   const modalActivity = document.getElementById("modal-activity");
   const doneButton = document.getElementById("done-button");
   const doneButtonLabel = document.getElementById("done-button-label");
+
+  /* BACKGROUND AUDIO */
+  const bgAudio = document.getElementById("bg-audio");
 
   let lovePoints = Number(localStorage.getItem(LOVE_POINTS_KEY) || "0");
   let completedDays = [];
@@ -2377,19 +2417,24 @@
   /* -------------------------------------------------
      10) CALENDAR + MODAL
   --------------------------------------------------*/
-  function isToday(day) {
-    const now = new Date();
-    return now.getMonth() === 11 && now.getDate() === day;
-  }
 
-  function isLocked(day) {
-    const now = new Date();
-    if (now.getMonth() !== 11) return false;
-    return day > now.getDate();
-  }
-
+  /* TODAY HELPER – still for the 1-day-per-real-date rule */
   function getTodayKey() {
     return new Date().toISOString().slice(0, 10);
+  }
+
+  /* 🔓 isLocked: now ALWAYS false so she can pick any day in any order */
+  function isLocked(day) {
+    return false;
+  }
+
+  /* Helper to mark today's date visually if you still want */
+  function isToday(day) {
+    const now = new Date();
+    // Optional: if you want exact calendar logic, uncomment:
+    // return now.getMonth() === 11 && now.getDate() === day;
+    // Or: just highlight Day 1 as "today" for aesthetics:
+    return day === 1;
   }
 
   daysData.forEach((d) => {
@@ -2423,6 +2468,7 @@
         const todayKey = getTodayKey();
         const opened = openedPerDate[todayKey];
 
+        // 1 NEW DAY per real-life day, but ANY day number is allowed
         if (opened && opened !== d.day) {
           alert(`You already opened Day ${opened} today. Come back tomorrow 💌`);
           return;
@@ -2452,7 +2498,30 @@
   }
 
   /* -------------------------------------------------
-     11) MODAL + ACTIVITY RENDERING
+     11) BACKGROUND MUSIC – PLAY PER DAY
+  --------------------------------------------------*/
+  function playSongForDay(day) {
+    if (!bgAudio) return;
+    const src = songs[day];
+    if (!src) return;
+
+    const currentDay = bgAudio.getAttribute("data-current-day");
+    if (String(currentDay) === String(day) && !bgAudio.paused) {
+      return; // already playing correct song
+    }
+
+    bgAudio.src = src;
+    bgAudio.setAttribute("data-current-day", day);
+    bgAudio
+      .play()
+      .catch(() => {
+        // Autoplay might be blocked until user interaction,
+        // but clicking the day card usually counts as interaction.
+      });
+  }
+
+  /* -------------------------------------------------
+     12) MODAL + ACTIVITY RENDERING
   --------------------------------------------------*/
   function openModal(d) {
     currentDayObj = d;
@@ -2483,6 +2552,9 @@
     const completed = completedDays.includes(d.day);
     updateDoneButtonState(completed);
 
+    // 🔊 Play background track for this day
+    playSongForDay(d.day);
+
     modalBackdrop.classList.add("active");
   }
 
@@ -2500,7 +2572,7 @@
   });
 
   /* -------------------------------------------------
-     12) DONE BUTTON
+     13) DONE BUTTON
   --------------------------------------------------*/
   function updateDoneButtonState(completed) {
     if (completed) {
@@ -2533,7 +2605,7 @@
   });
 
   /* -------------------------------------------------
-     13) ACTIVITY TYPES (HIGHLIGHTS, SLIDERS, ANSWERS)
+     14) ACTIVITY TYPES (HIGHLIGHTS, SLIDERS, ANSWERS)
   --------------------------------------------------*/
   function ensureDayLog(day) {
     if (!activityLogs[day]) activityLogs[day] = {};
@@ -2757,4 +2829,3 @@
   </script>
 </body>
 </html>
-
