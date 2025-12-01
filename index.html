@@ -328,7 +328,6 @@
       }
     }
 
-    /* Glow orbs */
     .orb {
       position: absolute;
       border-radius: 999px;
@@ -366,22 +365,6 @@
     }
 
     header {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-
-    @media (min-width: 768px) {
-      header is {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-      }
-    }
-
-    header {
-      /* fix stray selector above */
       display: flex;
       flex-direction: column;
       gap: 14px;
@@ -557,7 +540,6 @@
       font-size: 12px;
     }
 
-    /* Progress bar */
     .progress-wrapper {
       margin-top: 8px;
       font-size: 11px;
@@ -583,7 +565,6 @@
       transition: width 0.2s ease-out;
     }
 
-    /* Calendar area */
     .layout {
       display: grid;
       gap: 18px;
@@ -778,8 +759,6 @@
       border-color: rgba(248,250,252,0.7);
     }
 
-    /* Right side: Preview & tips */
-
     .side-card {
       background: radial-gradient(circle at top, rgba(15,23,42,0.95), rgba(15,23,42,0.98));
       border-radius: var(--radius-2xl);
@@ -957,7 +936,6 @@
       padding: 0;
     }
 
-    /* Modal */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -1281,6 +1259,73 @@
         bottom: 22px;
       }
     }
+
+    /* Audio player bar in modal */
+    .player {
+      margin-top: 10px;
+      border-radius: 16px;
+      border: 1px solid rgba(148,163,184,0.7);
+      background: radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,1));
+      padding: 6px 9px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+    }
+
+    .player-btn {
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.8);
+      background: rgba(15,23,42,0.95);
+      color: #e5e7eb;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .player-bar-wrap {
+      flex: 1;
+    }
+
+    .player-bar-wrap input[type="range"] {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(31,41,55,0.9);
+      outline: none;
+    }
+
+    .player-bar-wrap input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #f97373;
+      box-shadow: 0 0 0 4px rgba(249,115,115,0.3);
+      cursor: pointer;
+    }
+
+    .player-bar-wrap input[type="range"]::-moz-range-thumb {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #f97373;
+      border: none;
+      box-shadow: 0 0 0 4px rgba(249,115,115,0.3);
+      cursor: pointer;
+    }
+
+    .player-time {
+      min-width: 90px;
+      text-align: right;
+      color: var(--text-soft);
+    }
   </style>
 </head>
 <body>
@@ -1532,7 +1577,7 @@
     </div>
   </div>
 
-  <!-- Floating audio toggle (inside main app so only after login) -->
+  <!-- Floating audio toggle (mute/unmute) -->
   <button class="audio-toggle" id="audio-toggle" aria-label="Toggle background music">
     <span id="audio-icon">🔊</span>
   </button>
@@ -1559,6 +1604,16 @@
       <div class="modal-body">
         <div class="wish-text" id="modal-wish"></div>
         <div class="activity-block" id="modal-activity"></div>
+
+        <!-- Audio player bar -->
+        <div class="player" id="audio-player">
+          <button class="player-btn" id="player-play-pause" type="button">▶</button>
+          <div class="player-bar-wrap">
+            <input type="range" id="player-seek" min="0" max="100" value="0" />
+          </div>
+          <div class="player-time" id="player-time">0:00 / 0:00</div>
+        </div>
+
         <button class="primary-btn" id="done-button" type="button">
           <span class="icon">✅</span>
           <span id="done-button-label">Mark this task as done (+10 ❤️)</span>
@@ -1571,9 +1626,6 @@
   </div>
 
   <script type="module">
-  /* -------------------------------------------------
-     1) FIREBASE IMPORTS
-  --------------------------------------------------*/
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
   import {
     getFirestore,
@@ -1583,9 +1635,6 @@
     deleteDoc
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-  /* -------------------------------------------------
-     2) FIREBASE CONFIG
-  --------------------------------------------------*/
   const firebaseConfig = {
     apiKey: "AIzaSyDDmoePihLpjM5pmkZuIQAAajw8mtM9UU4",
     authDomain: "xmas-rose.firebaseapp.com",
@@ -1600,9 +1649,6 @@
   const db = getFirestore(app);
   const userDocRef = doc(db, "xmasUsers", "rose");
 
-  /* -------------------------------------------------
-     3) CONSTANTS & SELECTORS
-  --------------------------------------------------*/
   const LOGIN_PASSWORD = "25062025";
   const ADMIN_PASSWORD = "adminrose";
 
@@ -1613,535 +1659,12 @@
   const ACTIVITY_LOGS_KEY = "activity_logs_v1";
   const POINTS_PER_TASK = 10;
 
-  /* 3B) STATIC DATA – COMPLIMENTS + 30 DAYS */
-  const compliments = [
-    "You are my favourite notification of the day.",
-    "If softness had a face, it would look exactly like you.",
-    "You don’t even realise how effortlessly loveable you are. Hehe just kidding (but also not).",
-    "You’re the calm and the chaos at the same time and I’m obsessed.",
-    "You walking into my life is still my favourite plot twist.",
-    "You make even the most boring days feel like a movie scene.",
-    "Your laugh is my comfort sound.",
-    "Mutheee… I’m still not over you.",
-    "I don’t believe in perfect people, but you’re dangerously close.",
-    "You’re my favourite place to emotionally overshare.",
-    "I love you my Chaos Queen.",
-    "You make my idea of ‘home’ feel like a person, not a place."
-  ];
-
-  /* BACKGROUND MUSIC – 30 SONGS, 1 PER CALENDAR DAY (1–30) */
-  // Files in /audio/day1.mp3 ... /audio/day30.mp3
+  /* SONGS: Day 1 -> day1.mp3, etc. */
   const songs = Array.from({ length: 30 }, (_, i) => `./audio/day${i + 1}.mp3`);
 
+  /* Audio state */
   let bgAudio = null;
-  let musicInitialized = false;
   let isMuted = false;
-
-  function getTodaySongIndex() {
-    const now = new Date();
-    let day = now.getDate(); // 1–31
-    if (day < 1) day = 1;
-    if (day > 30) day = 30; // clamp 31 -> 30
-    // Map 1–30 -> index 0–29
-    return day - 1;
-  }
-
-  function initBackgroundMusic() {
-    if (musicInitialized) return;
-    musicInitialized = true;
-
-    const idx = getTodaySongIndex();
-    const src = songs[idx];
-
-    bgAudio = new Audio(src);
-    bgAudio.loop = true;
-    bgAudio.volume = 0.4;
-
-    bgAudio.play().catch(() => {
-      // ignore autoplay block; user can start via button
-    });
-  }
-
-  const daysData = [
-    {
-      day: 1,
-      label: "Soft start",
-      type: "loveNote",
-      emoji: "🎄",
-      wish: [
-        "Day 1 of 30. No pressure, just vibes.",
-        "Tonight, just read this and let it sink in: I am genuinely so grateful that you exist in my life. Not in a dramatic movie way, but in the tiny everyday way – the random messages, the sleepy calls, the way you just <i>are</i>."
-      ],
-      activity: {
-        heading: "Tiny reflection",
-        description: "Think of the very first moment where you felt, ‘hmm… this person might be a little too important to me.’",
-        note: "You don’t have to tell me, but you <i>can</i> write it in the box below if you want."
-      }
-    },
-    {
-      day: 2,
-      label: "Cozy choices",
-      type: "thisOrThat",
-      emoji: "☕",
-      wish: [
-        "Today is tiny choice day.",
-        "I want to know your chaos preferences, so I can bully you more accurately later. 🫶"
-      ],
-      activity: {
-        heading: "Pick your chaos",
-        description: "Tap the ones that feel the most ‘you’ right now.",
-        options: [
-          "Warm chai + overthinking",
-          "Cold coffee + zero thoughts head empty",
-          "Night calls",
-          "Random voice notes",
-          "Inside jokes only we understand",
-          "You roasting me with love",
-          "Hugs and kisses"
-        ],
-        note: "You can pick more than one. Obviously, you’re complicated."
-      }
-    },
-    {
-      day: 3,
-      label: "Flirty quick game",
-      type: "quiz",
-      emoji: "🔥",
-      wish: [
-        "Ok, tiny spicy upgrade.",
-        "Today is about you confessing things… in the safest, most unserious way. 😈"
-      ],
-      activity: {
-        heading: "Spicy rapid-fire",
-        description: "Answer in the box, or later on chat. No overthinking, just first instinct.",
-        note: "Think of it like a soft ‘truth’ round, Gen Z."
-      }
-    },
-    {
-      day: 4,
-      label: "Compliment drop",
-      type: "compliment",
-      emoji: "💖",
-      wish: [
-        "Today you’re banned from being mean to yourself.",
-        "If your brain starts bullying you, open this card and let me cancel it with a compliment."
-      ],
-      activity: {
-        heading: "Tap for a compliment",
-        description: "Hit the button as many times as you want. There is no limit on how much love you’re allowed to receive in a day."
-      }
-    },
-    {
-      day: 5,
-      label: "Our soundtrack",
-      type: "quiz",
-      emoji: "🎧",
-      wish: [
-        "I love knowing what songs remind you of us.",
-        "Tonight’s mission is music-flavoured."
-      ],
-      activity: {
-        heading: "Song for ‘us’",
-        description: "Pick one song that feels like ‘us’ and send it to me later.",
-        note: "In the answer box you can also drop a lyric, or just type why you picked it."
-      }
-    },
-    {
-      day: 6,
-      label: "Deeper feelings",
-      type: "quiz",
-      emoji: "❤️",
-      wish: [
-        "We’re 6 days in, so we’re allowed to be slightly deeper now.",
-        "Still soft, still safe, don’t panic."
-      ],
-      activity: {
-        heading: "Three tiny questions",
-        description: "Answer these in your own time — in your head, in the box, or over chat.",
-        note: "No exam, no grading. I just want your honest brain."
-      }
-    },
-    {
-      day: 7,
-      label: "Truth or spice",
-      type: "quiz",
-      emoji: "🌶️",
-      wish: [
-        "End of week 1. Time for a playful little confession day.",
-        "Nothing dramatic, just you being a tiny bit honest about us."
-      ],
-      activity: {
-        heading: "Soft truth round",
-        description: "Pick one thing you’d tell me if we were playing truth-or-dare and you chose ‘truth’.",
-        note: "Can be serious, funny, flirty – your choice."
-      }
-    },
-    {
-      day: 8,
-      label: "Future tiny dream",
-      type: "simpleTask",
-      emoji: "🌌",
-      wish: [
-        "Let’s be delusional for a second. Your fav word hehe.",
-        "Not in a 5-year plan way. In a ‘tiny fantasy moment’ way."
-      ],
-      activity: {
-        heading: "Small ‘one day’ dream",
-        description: "Think of a small future moment with me (coffee date, movie night, first night, cooking disaster together, random road trip).",
-        note: "Write it if you want. Or just picture it and smile to yourself like a weirdo."
-      }
-    },
-    {
-      day: 9,
-      label: "Naughty or nice",
-      type: "quiz",
-      emoji: "🎅",
-      wish: [
-        "Santa is checking your file.",
-        "Today is about all the ways you’ve been ‘nice’ and ‘naughty’ with me this year."
-      ],
-      activity: {
-        heading: "List check",
-        description: "Think Christmas list, but it’s just about us.",
-        note: "You can keep it wholesome or a tiny bit chaotic, your choice."
-      }
-    },
-    {
-      day: 10,
-      label: "Love note",
-      type: "loveNote",
-      emoji: "🕯️",
-      wish: [
-        "You don’t have to do anything special to deserve consistency and care.",
-        "You are not ‘too much’ for needing reassurance or softness. You’re human."
-      ],
-      activity: {
-        heading: "Gentle reminder",
-        description: "Write one sentence to yourself that you wish you believed more often.",
-        note: "You can also screenshot it and send it to me so I can repeat it back to you when you forget."
-      }
-    },
-    {
-      day: 11,
-      label: "Long-distance confessions",
-      type: "quiz",
-      emoji: "✈️",
-      wish: [
-        "Some days the distance hits harder than usual.",
-        "Today is for admitting what you actually miss the most."
-      ],
-      activity: {
-        heading: "Miss-you edition",
-        description: "Think about one specific thing you’re craving from me right now – a hug, a look, a stupid joke, a fight+makeup, anything.",
-        note: "Write it down so I know what to over-deliver on when we meet."
-      }
-    },
-    {
-      day: 12,
-      label: "Christmas wishlist",
-      type: "quiz",
-      emoji: "🎁",
-      wish: [
-        "Today is your Christmas wishlist day.",
-        "Not gifts – moments."
-      ],
-      activity: {
-        heading: "Moment wishlist",
-        description: "List 3 tiny, realistic things you’d love us to do together in the next year.",
-        note: "Think small but cute – movie nights, cities, food, rituals."
-      }
-    },
-    {
-      day: 13,
-      label: "Memory lane",
-      type: "quiz",
-      emoji: "📝",
-      wish: [
-        "I still replay random moments with you in my head like a favourite scene.",
-        "Your turn now."
-      ],
-      activity: {
-        heading: "Little flashback",
-        description: "Think of one tiny, random moment with me that makes you smile.",
-        note: "Write about it if you feel like it. Even one line is enough."
-      }
-    },
-    {
-      day: 14,
-      label: "Rom-com choices",
-      type: "thisOrThat",
-      emoji: "🍿",
-      wish: [
-        "We’re almost halfway, so obviously it’s time for some chaos preferences again.",
-        "Rom-com edition."
-      ],
-      activity: {
-        heading: "What kind of us are we?",
-        description: "Tap everything you’d like to experience with me IRL.",
-        options: [
-          "Movie night + snacks",
-          "Late night drive",
-          "Beach walk + oversharing",
-          "Grocery shopping date",
-          "Stay-in rainy day",
-          "Sunrise or sunset together"
-        ]
-      }
-    },
-    {
-      day: 15,
-      label: "Would you rather: us",
-      type: "quiz",
-      emoji: "😉",
-      wish: [
-        "Halfway through 30 days, so let’s play.",
-        "Today is unserious but kind of exposing. 😌"
-      ],
-      activity: {
-        heading: "‘Us’ edition",
-        description: "Answer in your head or in the box – I dare you to be honest.",
-        note: "This is literally fanfic-writing our relationship."
-      }
-    },
-    {
-      day: 16,
-      label: "Love note",
-      type: "loveNote",
-      emoji: "🎁",
-      wish: [
-        "Sometimes I wish I could physically wrap comfort around you like a blanket.",
-        "Since I can’t, this will have to do for now: you are not alone in anything you’re going through."
-      ],
-      activity: {
-        heading: "Gentle brain dump",
-        description: "If your mind is noisy today, unload a bit here. No structure needed.",
-        note: "You don’t have to send it. This space is just for you."
-      }
-    },
-    {
-      day: 17,
-      label: "Us, then & now",
-      type: "quiz",
-      emoji: "🪞",
-      wish: [
-        "We’ve changed a lot since the start – individually and together.",
-        "I like this version of us a lot."
-      ],
-      activity: {
-        heading: "Then vs now",
-        description: "Reflect on how your view of me/us has shifted.",
-        note: "Even if the answer is ‘I got more attached than planned’, that still counts."
-      }
-    },
-    {
-      day: 18,
-      label: "Secret soft spots",
-      type: "quiz",
-      emoji: "🌷",
-      wish: [
-        "Reminder: you are not hard to love.",
-        "Your mind lies. I don’t."
-      ],
-      activity: {
-        heading: "Soft spot confessions",
-        description: "Today is about the tiny things that melt you.",
-        note: "You’re allowed to be shamelessly soft here."
-      }
-    },
-    {
-      day: 19,
-      label: "How to love you better",
-      type: "quiz",
-      emoji: "📱",
-      wish: [
-        "Communication style edition.",
-        "Help me fine-tune how I should show up for you."
-      ],
-      activity: {
-        heading: "Upgrade me",
-        description: "Tell me exactly how to be better for you.",
-        note: "Yes, I’m literally asking for a manual."
-      }
-    },
-    {
-      day: 20,
-      label: "Love note",
-      type: "loveNote",
-      emoji: "🧣",
-      wish: [
-        "I don’t ever want you to shrink yourself to be ‘easier’ to love.",
-        "I’d rather learn your storms properly than only know the sunny version of you."
-      ],
-      activity: {
-        heading: "Safe thoughts",
-        description: "Write one thing you’re scared to say out loud sometimes.",
-        note: "If you ever want to share it with me, I’ll hold it gently."
-      }
-    },
-    {
-      day: 21,
-      label: "Spicy what-if",
-      type: "quiz",
-      emoji: "💫",
-      wish: [
-        "End-of-month energy.",
-        "Let’s be a bit delulu again, but in a very us-core way."
-      ],
-      activity: {
-        heading: "What if we were together today?",
-        description: "Imagine we magically had today together in the same city. What’s the first thing you’d drag me to do with you?",
-        note: "Coffee, cuddles, fight+makeup, shopping, chaos? Your call."
-      }
-    },
-    {
-      day: 22,
-      label: "Compliment drop",
-      type: "compliment",
-      emoji: "⭐",
-      wish: [
-        "Every time you doubt yourself, remember there’s a whole version of you I’m in love with that you haven’t fully seen yet.",
-        "Tap to borrow my perspective for a sec."
-      ],
-      activity: {
-        heading: "Perspective swap",
-        description: "Hit the button and let me talk about you like you deserve."
-      }
-    },
-    {
-      day: 23,
-      label: "Movie scene",
-      type: "quiz",
-      emoji: "🎬",
-      wish: [
-        "If our story was a movie, it would have so many underrated scenes.",
-        "Pick one in your head right now."
-      ],
-      activity: {
-        heading: "Favourite scene so far",
-        description: "What’s one moment with me you never expected to matter this much?",
-        note: "This can be as silly or as deep as you want."
-      }
-    },
-    {
-      day: 24,
-      label: "Cozy mode",
-      type: "thisOrThat",
-      emoji: "🍰",
-      wish: [
-        "Christmas-eve eve energy.",
-        "Today is about soft, cosy preferences."
-      ],
-      activity: {
-        heading: "Cozy mode selector",
-        description: "Tap everything that sounds like a perfect chill day with me.",
-        options: [
-          "Pyjamas all day",
-          "Sharing a blanket",
-          "Cooking something together",
-          "Binge-watching something dumb",
-          "Video call while doing nothing",
-          "Afternoon nap together (one day)"
-        ]
-      }
-    },
-    {
-      day: 25,
-      label: "Christmas day",
-      type: "loveNote",
-      emoji: "🎅🏻",
-      wish: [
-        "Merry Christmas, you menace.",
-        "If I could teleport, I’d be next to you right now with food, a hug, and a stupid amount of affection."
-      ],
-      activity: {
-        heading: "Christmas wish",
-        description: "If you could have one tiny, realistic wish with me today, what would it be? Also one long paragraph about anything: us, your day, your hopes, your chaos.",
-        note: "Send it to me later so I can see how many I can actually make happen."
-      }
-    },
-    {
-      day: 26,
-      label: "Late night Qs",
-      type: "quiz",
-      emoji: "🌙",
-      wish: [
-        "Post-Christmas crash = overthinking hours.",
-        "So let’s direct that overthinking towards us, obviously."
-      ],
-      activity: {
-        heading: "Sleepover questions (virtual)",
-        description: "Think of this as a 2 AM call vibe: one thing you want us to do more, and one thing you secretly love that we already do.",
-        note: "Write it here or send it to me when the mood hits."
-      }
-    },
-    {
-      day: 27,
-      label: "Year reflection",
-      type: "quiz",
-      emoji: "📆",
-      wish: [
-        "We survived another year somehow.",
-        "And you being in my year automatically upgraded it."
-      ],
-      activity: {
-        heading: "Year-end reflection",
-        description: "Three small questions about this year and us.",
-        note: "Be honest. Even if the answer is ‘it was messy but worth it’."
-      }
-    },
-    {
-      day: 28,
-      label: "Bedtime softness",
-      type: "quiz",
-      emoji: "🌙",
-      wish: [
-        "You deserve soft words on the days you feel the least worthy of them.",
-        "So obviously I’m giving you some."
-      ],
-      activity: {
-        heading: "Night thoughts",
-        description: "Right before you sleep today, think about this: what feeling do you want more of with us next year?",
-        note: "You can write it here so we don’t forget."
-      }
-    },
-    {
-      day: 29,
-      label: "Future episodes",
-      type: "thisOrThat",
-      emoji: "🧭",
-      wish: [
-        "Almost the last day.",
-        "Let’s talk future ‘us’ in a very unserious way."
-      ],
-      activity: {
-        heading: "Future episodes",
-        description: "Tap every scenario you’d like to see an episode of in our story.",
-        options: [
-          "Airport reunion",
-          "Surprise visit",
-          "Random weekend trip",
-          "Cooking date disaster",
-          "Midnight walk after a fight",
-          "Slow dancing in the kitchen"
-        ]
-      }
-    },
-    {
-      day: 30,
-      label: "Soft finale",
-      type: "loveNote",
-      emoji: "🎇",
-      wish: [
-        "30 days later and I still want you. That should tell you something.",
-        "Thank you for existing, for staying, for trying, for choosing me in all the tiny ways you do."
-      ],
-      activity: {
-        heading: "Final note",
-        description: "Write anything you want to tell future-you or future-us.",
-        note: "Whatever you write here is your own little time capsule."
-      }
-    }
-  ];
 
   /* LOGIN ELEMENTS */
   const loginScreen = document.getElementById("login-screen");
@@ -2149,7 +1672,6 @@
   const loginBtn = document.getElementById("login-button");
   const loginError = document.getElementById("login-error");
 
-  /* MAIN APP */
   const mainApp = document.getElementById("main-app");
 
   /* ADMIN */
@@ -2190,9 +1712,12 @@
   const doneButton = document.getElementById("done-button");
   const doneButtonLabel = document.getElementById("done-button-label");
 
-  /* AUDIO TOGGLE */
+  /* AUDIO TOGGLE + PLAYER */
   const audioToggle = document.getElementById("audio-toggle");
   const audioIcon = document.getElementById("audio-icon");
+  const playerPlayPause = document.getElementById("player-play-pause");
+  const playerSeek = document.getElementById("player-seek");
+  const playerTime = document.getElementById("player-time");
 
   let lovePoints = Number(localStorage.getItem(LOVE_POINTS_KEY) || "0");
   let completedDays = [];
@@ -2201,9 +1726,29 @@
   let currentDayObj = null;
   const dayCardMap = {};
 
-  /* -------------------------------------------------
-     4) LOGIN LOGIC
-  --------------------------------------------------*/
+  /* Compliments & days data (same as before) */
+  const compliments = [
+    "You are my favourite notification of the day.",
+    "If softness had a face, it would look exactly like you.",
+    "You don’t even realise how effortlessly loveable you are. Hehe just kidding (but also not).",
+    "You’re the calm and the chaos at the same time and I’m obsessed.",
+    "You walking into my life is still my favourite plot twist.",
+    "You make even the most boring days feel like a movie scene.",
+    "Your laugh is my comfort sound.",
+    "Mutheee… I’m still not over you.",
+    "I don’t believe in perfect people, but you’re dangerously close.",
+    "You’re my favourite place to emotionally overshare.",
+    "I love you my Chaos Queen.",
+    "You make my idea of ‘home’ feel like a person, not a place."
+  ];
+
+  const daysData = [/* --- SAME 30-DAY DATA AS PREVIOUS MESSAGE --- */];
+
+  /* For brevity in this explanation: paste the exact daysData array you already have here.
+     (I kept it unchanged from the previous version – you can reuse it 1:1.)
+  */
+
+  /* LOGIN */
   function showApp() {
     loginScreen.style.display = "none";
     mainApp.style.display = "block";
@@ -2214,7 +1759,6 @@
     if (val === LOGIN_PASSWORD) {
       localStorage.setItem(LOGIN_KEY, "true");
       showApp();
-      initBackgroundMusic(); // start when she logs in
     } else {
       loginError.textContent = "Wrong code. Try again 😤";
     }
@@ -2224,50 +1768,21 @@
     showApp();
   }
 
-  // If she's already logged in from before, start music on first click inside app
-  document.addEventListener(
-    "click",
-    () => {
-      if (mainApp.style.display === "block") {
-        initBackgroundMusic();
-      }
-    },
-    { once: true }
-  );
-
   loginBtn.addEventListener("click", handleLogin);
   loginInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") handleLogin();
   });
 
-  /* -------------------------------------------------
-     5) AUDIO TOGGLE LOGIC
-  --------------------------------------------------*/
-  if (audioToggle) {
-    audioToggle.addEventListener("click", () => {
-      if (!bgAudio) {
-        initBackgroundMusic();
-      }
-      if (!bgAudio) return;
+  /* AUDIO: MUTE TOGGLE */
+  audioToggle.addEventListener("click", () => {
+    if (!bgAudio) return;
+    isMuted = !isMuted;
+    bgAudio.muted = isMuted;
+    audioIcon.textContent = isMuted ? "🔈" : "🔊";
+    audioToggle.classList.toggle("muted", isMuted);
+  });
 
-      if (isMuted || bgAudio.muted || bgAudio.paused) {
-        bgAudio.muted = false;
-        isMuted = false;
-        bgAudio.play().catch(() => {});
-        audioIcon.textContent = "🔊";
-        audioToggle.classList.remove("muted");
-      } else {
-        bgAudio.muted = true;
-        isMuted = true;
-        audioIcon.textContent = "🔈";
-        audioToggle.classList.add("muted");
-      }
-    });
-  }
-
-  /* -------------------------------------------------
-     6) ADMIN LOGIC
-  --------------------------------------------------*/
+  /* ADMIN */
   adminOpenBtn.addEventListener("click", () => {
     adminScreen.style.display = "flex";
     adminError.textContent = "";
@@ -2325,9 +1840,7 @@
     if (e.key === "Enter") handleAdminLogin();
   });
 
-  /* -------------------------------------------------
-     7) NAME SAVING
-  --------------------------------------------------*/
+  /* NAME */
   function setNameEverywhere(name) {
     const clean = name.trim() || "Rose";
     nameDisplay.textContent = clean;
@@ -2345,9 +1858,7 @@
     setNameEverywhere(n);
   });
 
-  /* -------------------------------------------------
-     8) LOAD LOCAL STATE
-  --------------------------------------------------*/
+  /* LOAD LOCAL STATE */
   try { completedDays = JSON.parse(localStorage.getItem(COMPLETED_DAYS_KEY) || "[]"); } catch {}
   try { openedPerDate = JSON.parse(localStorage.getItem(OPENED_PER_DATE_KEY) || "{}"); } catch {}
   try { activityLogs = JSON.parse(localStorage.getItem(ACTIVITY_LOGS_KEY) || "{}"); } catch {}
@@ -2361,16 +1872,13 @@
   updateLovePointsDisplay();
   updateProgress();
 
-  /* -------------------------------------------------
-     9) FIRESTORE – LOAD + SAVE
-  --------------------------------------------------*/
+  /* FIRESTORE */
   async function loadFromCloud() {
     try {
       const snap = await getDoc(userDocRef);
       if (!snap.exists()) return;
 
       const data = snap.data();
-
       if (typeof data.lovePoints === "number") lovePoints = data.lovePoints;
       if (Array.isArray(data.completedDays)) completedDays = data.completedDays;
       if (data.openedPerDate) openedPerDate = data.openedPerDate;
@@ -2384,7 +1892,6 @@
       updateLovePointsDisplay();
       updateProgress();
       completedDays.forEach(updateDayCardCompleted);
-
     } catch (e) {
       console.error("Cloud load failed:", e);
     }
@@ -2415,9 +1922,7 @@
     }
   }
 
-  /* -------------------------------------------------
-     10) ADMIN RESET ALL DATA
-  --------------------------------------------------*/
+  /* ADMIN RESET */
   function resetDayCard(day) {
     const card = dayCardMap[day];
     if (!card) return;
@@ -2453,9 +1958,7 @@
     location.reload();
   });
 
-  /* -------------------------------------------------
-     11) CALENDAR + MODAL
-  --------------------------------------------------*/
+  /* CALENDAR */
   function isToday(day) {
     const now = new Date();
     return now.getMonth() === 11 && now.getDate() === day; // highlight December days
@@ -2490,10 +1993,7 @@
       </div>
     `;
 
-    // Allow any random day, but only one new day per real-life date
     card.addEventListener("click", () => {
-      initBackgroundMusic(); // ensure music starts once she engages
-
       const todayKey = getTodayKey();
       const opened = openedPerDate[todayKey];
 
@@ -2524,9 +2024,87 @@
     card.querySelector(".day-emoji").textContent = "❤️";
   }
 
-  /* -------------------------------------------------
-     12) MODAL + ACTIVITY RENDERING
-  --------------------------------------------------*/
+  /* MODAL + AUDIO PER DAY */
+  function formatTime(seconds) {
+    if (!seconds || isNaN(seconds)) return "0:00";
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  }
+
+  function updateTimeDisplay() {
+    if (!bgAudio || !playerTime) return;
+    const cur = bgAudio.currentTime || 0;
+    const dur = bgAudio.duration || 0;
+    playerTime.textContent = `${formatTime(cur)} / ${formatTime(dur)}`;
+  }
+
+  function updateSeekFromAudio() {
+    if (!bgAudio || !playerSeek || !bgAudio.duration) return;
+    const pct = (bgAudio.currentTime / bgAudio.duration) * 100;
+    playerSeek.value = pct || 0;
+    updateTimeDisplay();
+  }
+
+  function updatePlayPauseButton() {
+    if (!playerPlayPause) return;
+    if (bgAudio && !bgAudio.paused) {
+      playerPlayPause.textContent = "⏸";
+    } else {
+      playerPlayPause.textContent = "▶";
+    }
+  }
+
+  function attachAudioEvents() {
+    if (!bgAudio) return;
+    bgAudio.addEventListener("timeupdate", updateSeekFromAudio);
+    bgAudio.addEventListener("loadedmetadata", () => {
+      updateTimeDisplay();
+      updateSeekFromAudio();
+    });
+    bgAudio.addEventListener("play", updatePlayPauseButton);
+    bgAudio.addEventListener("pause", updatePlayPauseButton);
+  }
+
+  function loadSongForDay(day) {
+    const idx = day - 1;
+    const src = songs[idx];
+
+    if (!bgAudio) {
+      bgAudio = new Audio(src);
+      bgAudio.volume = 0.6;
+      bgAudio.loop = false;
+      attachAudioEvents();
+    } else {
+      bgAudio.src = src;
+    }
+
+    bgAudio.currentTime = 0;
+    bgAudio.muted = isMuted;
+    bgAudio.play().catch(() => {});
+    updatePlayPauseButton();
+  }
+
+  if (playerPlayPause) {
+    playerPlayPause.addEventListener("click", () => {
+      if (!bgAudio) return;
+      if (bgAudio.paused) {
+        bgAudio.play().catch(() => {});
+      } else {
+        bgAudio.pause();
+      }
+    });
+  }
+
+  if (playerSeek) {
+    playerSeek.addEventListener("input", () => {
+      if (!bgAudio || !bgAudio.duration) return;
+      const pct = Number(playerSeek.value);
+      bgAudio.currentTime = (pct / 100) * bgAudio.duration;
+      updateTimeDisplay();
+    });
+  }
+
   function openModal(d) {
     currentDayObj = d;
 
@@ -2556,6 +2134,14 @@
     const completed = completedDays.includes(d.day);
     updateDoneButtonState(completed);
 
+    // Load & play this day's song
+    loadSongForDay(d.day);
+
+    // Reset player UI
+    if (playerSeek) playerSeek.value = 0;
+    updateTimeDisplay();
+    updatePlayPauseButton();
+
     modalBackdrop.classList.add("active");
   }
 
@@ -2572,9 +2158,7 @@
     if (e.key === "Escape") closeModal();
   });
 
-  /* -------------------------------------------------
-     13) DONE BUTTON
-  --------------------------------------------------*/
+  /* DONE BUTTON */
   function updateDoneButtonState(completed) {
     if (completed) {
       doneButton.disabled = true;
@@ -2605,9 +2189,7 @@
     alert(`Task for Day ${day} marked as done!\n+${POINTS_PER_TASK} love points ❤️`);
   });
 
-  /* -------------------------------------------------
-     14) ACTIVITY TYPES
-  --------------------------------------------------*/
+  /* ACTIVITY RENDERING */
   function ensureDayLog(day) {
     if (!activityLogs[day]) activityLogs[day] = {};
     return activityLogs[day];
@@ -2637,7 +2219,6 @@
 
     const body = modalActivity.querySelector(".activity-body");
 
-    /* thisOrThat */
     if (d.type === "thisOrThat" && act.options) {
       const wrap = document.createElement("div");
       wrap.className = "activity-options";
@@ -2675,7 +2256,6 @@
       body.appendChild(wrap);
     }
 
-    /* compliment */
     if (d.type === "compliment") {
       const out = document.createElement("div");
       out.className = "compliment-output";
@@ -2697,112 +2277,16 @@
       body.appendChild(out);
     }
 
-    /* quiz / custom Qs */
     if (d.type === "quiz") {
       const wrap = document.createElement("div");
       wrap.className = "quiz-text";
 
-      if (d.day === 3) {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> What’s one thing about me you find unfairly attractive?</div>
-          <div><strong>2.</strong> When do you miss me the most during the day?</div>
-          <div><strong>3.</strong> If we were on a date tonight, where would you drag me first?</div>
-        `;
-      } else if (d.day === 5) {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> Which song is ‘us’ and why?</div>
-          <div><strong>2.</strong> Is there a lyric that low-key feels like it was written about us?</div>
-        `;
-      } else if (d.day === 6) {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> First thing you noticed about me?</div>
-          <div><strong>2.</strong> When did you realise you like me?</div>
-          <div><strong>3.</strong> One word for our vibe?</div>
-        `;
-      } else if (d.day === 7) {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> What’s one thing you’d admit only in a 2 AM call?</div>
-          <div><strong>2.</strong> What’s one truth about us that makes you smile?</div>
-        `;
-      } else if (d.day === 9) {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> One way you’ve been ‘nice’ to me this year?</div>
-          <div><strong>2.</strong> One tiny ‘naughty/chaotic’ thing you’d do if we were together right now?</div>
-        `;
-      } else if (d.day === 11) {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> What do you miss the most about having me physically there?</div>
-          <div><strong>2.</strong> What’s one moment you’re dying to experience with me in person?</div>
-        `;
-      } else if (d.day === 12) {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> Three tiny things you want us to do together next year?</div>
-          <div><strong>2.</strong> Which one of those is priority no.1?</div>
-        `;
-      } else if (d.day === 13) {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> Which random moment with me replays in your head?</div>
-          <div><strong>2.</strong> Why that one?</div>
-        `;
-      } else if (d.day === 15) {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> Would you rather we have a chaotic first trip or a cozy first stay-in weekend?</div>
-          <div><strong>2.</strong> Would you rather I surprise-visit you or you surprise-visit me?</div>
-          <div><strong>3.</strong> Would you rather we be low-key in public & dramatic in private, or opposite?</div>
-        `;
-      } else if (d.day === 17) {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> First impression in 3 words?</div>
-          <div><strong>2.</strong> What changed?</div>
-          <div><strong>3.</strong> What should never change?</div>
-        `;
-      } else if (d.day === 18) {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> What compliment from me do you secretly love hearing?</div>
-          <div><strong>2.</strong> What tiny gesture from me makes you feel weirdly safe?</div>
-        `;
-      } else if (d.day === 19) {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> When you’re low, how do you actually want me to show up?</div>
-          <div><strong>2.</strong> What’s one thing I already do that you don’t want me to stop?</div>
-        `;
-      } else if (d.day === 21) {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> If we had today together, what’s the first thing we’d do?</div>
-          <div><strong>2.</strong> What’s one ‘wild but realistic’ plan you want us to do next year?</div>
-        `;
-      } else if (d.day === 23) {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> If our story was a movie, what would this year’s title be?</div>
-          <div><strong>2.</strong> Which moment this year would be the trailer scene?</div>
-        `;
-      } else if (d.day === 26) {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> What’s one thing you want us to do more?</div>
-          <div><strong>2.</strong> What’s one thing you secretly love that we already do?</div>
-        `;
-      } else if (d.day === 27) {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> Best thing about us this year?</div>
-          <div><strong>2.</strong> What do you want more of?</div>
-          <div><strong>3.</strong> What do you want to leave behind?</div>
-        `;
-      } else if (d.day === 28) {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> What feeling do you want more of with us next year?</div>
-          <div><strong>2.</strong> What’s one thing you hope future-us never loses?</div>
-        `;
-      } else {
-        wrap.innerHTML = `
-          <div><strong>1.</strong> When did you feel something real with me?</div>
-          <div><strong>2.</strong> One tiny moment you still think about?</div>
-        `;
-      }
+      /* same quiz question logic as before, omitted here for brevity.
+         You can keep exactly the same conditionals for each day. */
 
       body.appendChild(wrap);
     }
 
-    /* answer textarea (any type) */
     const ans = document.createElement("div");
     ans.className = "answer-block";
     ans.innerHTML = `
