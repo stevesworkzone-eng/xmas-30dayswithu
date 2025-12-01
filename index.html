@@ -746,23 +746,6 @@
       opacity: 0.9;
     }
 
-    .day.locked {
-      cursor: default;
-      background: radial-gradient(circle at top, rgba(15,23,42,0.9), rgba(15,23,42,1));
-      border-style: dashed;
-      border-color: rgba(75,85,99,0.9);
-      color: rgba(148,163,184,0.9);
-    }
-
-    .day.locked .dot {
-      background: #4b5563;
-      box-shadow: none;
-    }
-
-    .day.locked .day-emoji {
-      opacity: 0.7;
-    }
-
     .day.today {
       border-color: rgba(248,250,252,0.85);
       box-shadow: 0 0 0 1px rgba(248,250,252,0.4), 0 15px 30px rgba(15,23,42,1);
@@ -789,15 +772,10 @@
       color: #fecaca;
     }
 
-    .day:hover:not(.locked) {
+    .day:hover {
       transform: translateY(-2px) scale(1.01);
       box-shadow: 0 16px 32px rgba(15,23,42,0.9);
       border-color: rgba(248,250,252,0.7);
-    }
-
-    .day.locked:hover {
-      transform: none;
-      box-shadow: none;
     }
 
     /* Right side: Preview & tips */
@@ -1216,24 +1194,6 @@
       box-shadow: none;
     }
 
-    .mood-slider-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 4px;
-    }
-
-    .mood-slider-row input[type="range"] {
-      flex: 1;
-    }
-
-    .mood-label {
-      font-size: 12px;
-      color: #bfdbfe;
-      min-width: 90px;
-      text-align: center;
-    }
-
     .quiz-text {
       font-size: 12px;
       color: var(--text-soft);
@@ -1280,6 +1240,46 @@
     ::-webkit-scrollbar-thumb {
       background: rgba(55,65,81,0.95);
       border-radius: 999px;
+    }
+
+    /* Floating audio toggle */
+    .audio-toggle {
+      position: fixed;
+      right: 16px;
+      bottom: 18px;
+      z-index: 120;
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.8);
+      background: radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,1));
+      box-shadow: 0 16px 32px rgba(15,23,42,0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      color: #e5e7eb;
+      backdrop-filter: blur(10px);
+    }
+
+    .audio-toggle:hover {
+      transform: translateY(-1px);
+    }
+
+    .audio-toggle:active {
+      transform: scale(0.96);
+    }
+
+    .audio-toggle.muted {
+      opacity: 0.7;
+    }
+
+    @media (min-width: 768px) {
+      .audio-toggle {
+        right: 22px;
+        bottom: 22px;
+      }
     }
   </style>
 </head>
@@ -1455,7 +1455,7 @@
               </div>
               <div class="calendar-sub">
                 One card per real-life day only. No binging ahead 👀
-                We’re doing this slow-burn Christmas rom-com properly.
+                We’re doing this slow-burn Christmas rom-com properly (but you can pick any day).
               </div>
             </div>
             <div class="calendar-badge">
@@ -1532,8 +1532,10 @@
     </div>
   </div>
 
-  <!-- BACKGROUND MUSIC (HIDDEN) -->
-  <audio id="bg-audio" loop style="display:none;"></audio>
+  <!-- Floating audio toggle (inside main app so only after login) -->
+  <button class="audio-toggle" id="audio-toggle" aria-label="Toggle background music">
+    <span id="audio-icon">🔊</span>
+  </button>
 
   <!-- Modal -->
   <div class="modal-backdrop" id="modal-backdrop">
@@ -1570,7 +1572,7 @@
 
   <script type="module">
   /* -------------------------------------------------
-     1) FIREBASE IMPORTS (CLEAN + CORRECT)
+     1) FIREBASE IMPORTS
   --------------------------------------------------*/
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
   import {
@@ -1626,6 +1628,39 @@
     "I love you my Chaos Queen.",
     "You make my idea of ‘home’ feel like a person, not a place."
   ];
+
+  /* BACKGROUND MUSIC – 30 SONGS, 1 PER CALENDAR DAY (1–30) */
+  // Files in /audio/day1.mp3 ... /audio/day30.mp3
+  const songs = Array.from({ length: 30 }, (_, i) => `./audio/day${i + 1}.mp3`);
+
+  let bgAudio = null;
+  let musicInitialized = false;
+  let isMuted = false;
+
+  function getTodaySongIndex() {
+    const now = new Date();
+    let day = now.getDate(); // 1–31
+    if (day < 1) day = 1;
+    if (day > 30) day = 30; // clamp 31 -> 30
+    // Map 1–30 -> index 0–29
+    return day - 1;
+  }
+
+  function initBackgroundMusic() {
+    if (musicInitialized) return;
+    musicInitialized = true;
+
+    const idx = getTodaySongIndex();
+    const src = songs[idx];
+
+    bgAudio = new Audio(src);
+    bgAudio.loop = true;
+    bgAudio.volume = 0.4;
+
+    bgAudio.play().catch(() => {
+      // ignore autoplay block; user can start via button
+    });
+  }
 
   const daysData = [
     {
@@ -2108,40 +2143,6 @@
     }
   ];
 
-  /* SONGS MAP – 30 songs, 1 per day */
-  const songs = {
-    1: "audio/day1.mp3",
-    2: "audio/day2.mp3",
-    3: "audio/day3.mp3",
-    4: "audio/day4.mp3",
-    5: "audio/day5.mp3",
-    6: "audio/day6.mp3",
-    7: "audio/day7.mp3",
-    8: "audio/day8.mp3",
-    9: "audio/day9.mp3",
-    10: "audio/day10.mp3",
-    11: "audio/day11.mp3",
-    12: "audio/day12.mp3",
-    13: "audio/day13.mp3",
-    14: "audio/day14.mp3",
-    15: "audio/day15.mp3",
-    16: "audio/day16.mp3",
-    17: "audio/day17.mp3",
-    18: "audio/day18.mp3",
-    19: "audio/day19.mp3",
-    20: "audio/day20.mp3",
-    21: "audio/day21.mp3",
-    22: "audio/day22.mp3",
-    23: "audio/day23.mp3",
-    24: "audio/day24.mp3",
-    25: "audio/day25.mp3",
-    26: "audio/day26.mp3",
-    27: "audio/day27.mp3",
-    28: "audio/day28.mp3",
-    29: "audio/day29.mp3",
-    30: "audio/day30.mp3"
-  };
-
   /* LOGIN ELEMENTS */
   const loginScreen = document.getElementById("login-screen");
   const loginInput = document.getElementById("login-password");
@@ -2189,8 +2190,9 @@
   const doneButton = document.getElementById("done-button");
   const doneButtonLabel = document.getElementById("done-button-label");
 
-  /* BACKGROUND AUDIO */
-  const bgAudio = document.getElementById("bg-audio");
+  /* AUDIO TOGGLE */
+  const audioToggle = document.getElementById("audio-toggle");
+  const audioIcon = document.getElementById("audio-icon");
 
   let lovePoints = Number(localStorage.getItem(LOVE_POINTS_KEY) || "0");
   let completedDays = [];
@@ -2212,6 +2214,7 @@
     if (val === LOGIN_PASSWORD) {
       localStorage.setItem(LOGIN_KEY, "true");
       showApp();
+      initBackgroundMusic(); // start when she logs in
     } else {
       loginError.textContent = "Wrong code. Try again 😤";
     }
@@ -2221,13 +2224,49 @@
     showApp();
   }
 
+  // If she's already logged in from before, start music on first click inside app
+  document.addEventListener(
+    "click",
+    () => {
+      if (mainApp.style.display === "block") {
+        initBackgroundMusic();
+      }
+    },
+    { once: true }
+  );
+
   loginBtn.addEventListener("click", handleLogin);
   loginInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") handleLogin();
   });
 
   /* -------------------------------------------------
-     5) ADMIN LOGIC
+     5) AUDIO TOGGLE LOGIC
+  --------------------------------------------------*/
+  if (audioToggle) {
+    audioToggle.addEventListener("click", () => {
+      if (!bgAudio) {
+        initBackgroundMusic();
+      }
+      if (!bgAudio) return;
+
+      if (isMuted || bgAudio.muted || bgAudio.paused) {
+        bgAudio.muted = false;
+        isMuted = false;
+        bgAudio.play().catch(() => {});
+        audioIcon.textContent = "🔊";
+        audioToggle.classList.remove("muted");
+      } else {
+        bgAudio.muted = true;
+        isMuted = true;
+        audioIcon.textContent = "🔈";
+        audioToggle.classList.add("muted");
+      }
+    });
+  }
+
+  /* -------------------------------------------------
+     6) ADMIN LOGIC
   --------------------------------------------------*/
   adminOpenBtn.addEventListener("click", () => {
     adminScreen.style.display = "flex";
@@ -2287,7 +2326,7 @@
   });
 
   /* -------------------------------------------------
-     6) NAME SAVING
+     7) NAME SAVING
   --------------------------------------------------*/
   function setNameEverywhere(name) {
     const clean = name.trim() || "Rose";
@@ -2307,7 +2346,7 @@
   });
 
   /* -------------------------------------------------
-     7) LOAD LOCAL STATE
+     8) LOAD LOCAL STATE
   --------------------------------------------------*/
   try { completedDays = JSON.parse(localStorage.getItem(COMPLETED_DAYS_KEY) || "[]"); } catch {}
   try { openedPerDate = JSON.parse(localStorage.getItem(OPENED_PER_DATE_KEY) || "{}"); } catch {}
@@ -2323,7 +2362,7 @@
   updateProgress();
 
   /* -------------------------------------------------
-     8) FIRESTORE – LOAD + SAVE
+     9) FIRESTORE – LOAD + SAVE
   --------------------------------------------------*/
   async function loadFromCloud() {
     try {
@@ -2377,7 +2416,7 @@
   }
 
   /* -------------------------------------------------
-     9) ADMIN RESET ALL DATA
+     10) ADMIN RESET ALL DATA
   --------------------------------------------------*/
   function resetDayCard(day) {
     const card = dayCardMap[day];
@@ -2415,26 +2454,15 @@
   });
 
   /* -------------------------------------------------
-     10) CALENDAR + MODAL
+     11) CALENDAR + MODAL
   --------------------------------------------------*/
-
-  /* TODAY HELPER – still for the 1-day-per-real-date rule */
-  function getTodayKey() {
-    return new Date().toISOString().slice(0, 10);
-  }
-
-  /* 🔓 isLocked: now ALWAYS false so she can pick any day in any order */
-  function isLocked(day) {
-    return false;
-  }
-
-  /* Helper to mark today's date visually if you still want */
   function isToday(day) {
     const now = new Date();
-    // Optional: if you want exact calendar logic, uncomment:
-    // return now.getMonth() === 11 && now.getDate() === day;
-    // Or: just highlight Day 1 as "today" for aesthetics:
-    return day === 1;
+    return now.getMonth() === 11 && now.getDate() === day; // highlight December days
+  }
+
+  function getTodayKey() {
+    return new Date().toISOString().slice(0, 10);
   }
 
   daysData.forEach((d) => {
@@ -2442,7 +2470,6 @@
     card.className = "day";
     card.dataset.day = d.day;
 
-    if (isLocked(d.day)) card.classList.add("locked");
     if (isToday(d.day)) card.classList.add("today");
     if (completedDays.includes(d.day)) card.classList.add("completed");
 
@@ -2452,36 +2479,36 @@
           <div class="day-number">${d.day}</div>
           <div class="day-tag">${completedDays.includes(d.day) ? "Completed" : d.label}</div>
         </div>
-        <div class="day-emoji">${completedDays.includes(d.day) ? "❤️" : isLocked(d.day) ? "🔒" : d.emoji}</div>
+        <div class="day-emoji">${completedDays.includes(d.day) ? "❤️" : d.emoji}</div>
       </div>
       <div class="day-footer">
         <div class="day-status">
           <div class="dot"></div>
-          <span>${completedDays.includes(d.day) ? "Done · reopen" : isLocked(d.day) ? "Locked" : "Ready to open"}</span>
+          <span>${completedDays.includes(d.day) ? "Done · reopen" : "Ready to open"}</span>
         </div>
         <div class="day-cta">${completedDays.includes(d.day) ? "View again" : "Open ✨"}</div>
       </div>
     `;
 
-    if (!isLocked(d.day)) {
-      card.addEventListener("click", () => {
-        const todayKey = getTodayKey();
-        const opened = openedPerDate[todayKey];
+    // Allow any random day, but only one new day per real-life date
+    card.addEventListener("click", () => {
+      initBackgroundMusic(); // ensure music starts once she engages
 
-        // 1 NEW DAY per real-life day, but ANY day number is allowed
-        if (opened && opened !== d.day) {
-          alert(`You already opened Day ${opened} today. Come back tomorrow 💌`);
-          return;
-        }
+      const todayKey = getTodayKey();
+      const opened = openedPerDate[todayKey];
 
-        if (!opened) {
-          openedPerDate[todayKey] = d.day;
-          saveLoveState();
-        }
+      if (opened && opened !== d.day) {
+        alert(`You already opened Day ${opened} today. Come back tomorrow 💌`);
+        return;
+      }
 
-        openModal(d);
-      });
-    }
+      if (!opened) {
+        openedPerDate[todayKey] = d.day;
+        saveLoveState();
+      }
+
+      openModal(d);
+    });
 
     grid.appendChild(card);
     dayCardMap[d.day] = card;
@@ -2495,29 +2522,6 @@
     card.querySelector(".day-status span:last-child").textContent = "Done · reopen";
     card.querySelector(".day-cta").textContent = "View again";
     card.querySelector(".day-emoji").textContent = "❤️";
-  }
-
-  /* -------------------------------------------------
-     11) BACKGROUND MUSIC – PLAY PER DAY
-  --------------------------------------------------*/
-  function playSongForDay(day) {
-    if (!bgAudio) return;
-    const src = songs[day];
-    if (!src) return;
-
-    const currentDay = bgAudio.getAttribute("data-current-day");
-    if (String(currentDay) === String(day) && !bgAudio.paused) {
-      return; // already playing correct song
-    }
-
-    bgAudio.src = src;
-    bgAudio.setAttribute("data-current-day", day);
-    bgAudio
-      .play()
-      .catch(() => {
-        // Autoplay might be blocked until user interaction,
-        // but clicking the day card usually counts as interaction.
-      });
   }
 
   /* -------------------------------------------------
@@ -2551,9 +2555,6 @@
 
     const completed = completedDays.includes(d.day);
     updateDoneButtonState(completed);
-
-    // 🔊 Play background track for this day
-    playSongForDay(d.day);
 
     modalBackdrop.classList.add("active");
   }
@@ -2605,7 +2606,7 @@
   });
 
   /* -------------------------------------------------
-     14) ACTIVITY TYPES (HIGHLIGHTS, SLIDERS, ANSWERS)
+     14) ACTIVITY TYPES
   --------------------------------------------------*/
   function ensureDayLog(day) {
     if (!activityLogs[day]) activityLogs[day] = {};
@@ -2636,7 +2637,7 @@
 
     const body = modalActivity.querySelector(".activity-body");
 
-    /* --- thisOrThat --- */
+    /* thisOrThat */
     if (d.type === "thisOrThat" && act.options) {
       const wrap = document.createElement("div");
       wrap.className = "activity-options";
@@ -2674,7 +2675,7 @@
       body.appendChild(wrap);
     }
 
-    /* --- compliment --- */
+    /* compliment */
     if (d.type === "compliment") {
       const out = document.createElement("div");
       out.className = "compliment-output";
@@ -2696,7 +2697,7 @@
       body.appendChild(out);
     }
 
-    /* --- quiz questions (custom per day) --- */
+    /* quiz / custom Qs */
     if (d.type === "quiz") {
       const wrap = document.createElement("div");
       wrap.className = "quiz-text";
@@ -2801,7 +2802,7 @@
       body.appendChild(wrap);
     }
 
-    /* --- answer textarea (for any type) --- */
+    /* answer textarea (any type) */
     const ans = document.createElement("div");
     ans.className = "answer-block";
     ans.innerHTML = `
